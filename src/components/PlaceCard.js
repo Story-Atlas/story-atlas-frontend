@@ -2,27 +2,30 @@
 import Link from 'next/link';
 
 export function PlaceCard({ place }) {
-  // DB에 main_photo_url이 없거나 비어있을 경우를 대비한 기본 이미지
-  const imageUrl = place.main_photo_url || 'https://via.placeholder.com/240x160.png?text=No+Image';
+  const imageUrl = place.main_photo_url || 'https://via.placeholder.com/288x192.png?text=No+Image';
 
   return (
     <Link
       href={`/places/${place.id}`}
-      className="block w-60 overflow-hidden shadow-lg  transition-transform hover:scale-105 shrink-0"
+      className="block w-72 overflow-hidden shadow-lg transition-transform hover:scale-105 shrink-0"
+      
+      // 👇 [수정] 이 한 줄을 추가하여 '링크 주소 끌기'를 방지합니다.
+      onDragStart={(e) => e.preventDefault()}
     >
-      {/* DB의 main_photo_url을 사용하도록 <img> 태그로 변경 */}
-      <div className="relative w-full h-40 bg-gray-200">
+      <div className="relative w-full h-48 bg-gray-200">
         <img
           src={imageUrl}
           alt={place.name}
-          className="w-full h-full object-cover" // 이미지가 꽉 차도록
+          className="w-full h-full object-cover"
+          draggable="false" // 이미지 드래그 방지 (유지)
         />
       </div>
 
-      <div className="p-4">
+      <div className="p-4 select-none"> {/* 텍스트 선택 방지 (유지) */}
         <h3 className="font-bold text-lg mb-1 truncate">{place.name}</h3>
-        {/* DB의 address를 사용하도록 변경 */}
-        <p className="text-gray-600 text-sm truncate">{place.address}</p>
+        <p className="text-gray-600 text-sm truncate h-6">
+          {place.summary?.headline || ' '}
+        </p>
       </div>
     </Link>
   );
