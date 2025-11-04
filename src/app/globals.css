@@ -3,6 +3,11 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  
+  /* 👇 [수정됨] layout.js에서 정의한 CSS 변수를 가져옵니다 */
+  /* (변수 이름을 layout.js와 통일합니다) */
+  --font-br-firma: var(--font-br-firma);
+  --font-nanum-square: var(--font-nanum-square);
 }
 
 @theme inline {
@@ -22,5 +27,22 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  
+  /* 👇 [수정됨] 기본 폰트를 NanumSquareNeo (변수명 통일)로 설정 */
+  font-family: var(--font-nanum-square), sans-serif;
+}
+
+/* 👇 [수정됨] BR Firma Black 폰트 클래스 */
+/* (layout.js, [id]/page.js에서 사용한 .font-title 클래스명으로 통일) */
+.font-title {
+  font-family: var(--font-br-firma), sans-serif;
+}
+
+/* 👇 [추가] 스크롤바 숨기기 유틸리티 클래스 */
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }

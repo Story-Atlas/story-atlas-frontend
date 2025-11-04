@@ -1,27 +1,28 @@
 // src/components/PlaceCard.js
-
-// "use client"; // useState나 이벤트 핸들러가 없다면 필요 없을 수 있습니다.
-// import Image from 'next/image'; // Image 컴포넌트 더 이상 사용 안 함
 import Link from 'next/link';
 
 export function PlaceCard({ place }) {
+  // DB에 main_photo_url이 없거나 비어있을 경우를 대비한 기본 이미지
+  const imageUrl = place.main_photo_url || 'https://via.placeholder.com/240x160.png?text=No+Image';
+
   return (
-    <Link 
-      href={`/places/${place.id}`} 
-      className="block w-60 rounded-lg overflow-hidden shadow-lg border border-gray-200 transition-transform hover:scale-105 shrink-0"
+    <Link
+      href={`/places/${place.id}`}
+      className="block w-60 overflow-hidden shadow-lg  transition-transform hover:scale-105 shrink-0"
     >
-      {/* 이미지 대신 배경색 div */}
-      <div 
-        className="relative w-full h-40 flex items-center justify-center text-white text-xl font-bold"
-        style={{ backgroundColor: place.color || '#cccccc' }} // place.color가 없으면 회색
-      >
-        {/* 임시로 카드 내용을 중앙에 표시 */}
-        <span className="p-2 bg-black bg-opacity-30 rounded-md">{place.name}</span>
+      {/* DB의 main_photo_url을 사용하도록 <img> 태그로 변경 */}
+      <div className="relative w-full h-40 bg-gray-200">
+        <img
+          src={imageUrl}
+          alt={place.name}
+          className="w-full h-full object-cover" // 이미지가 꽉 차도록
+        />
       </div>
 
       <div className="p-4">
         <h3 className="font-bold text-lg mb-1 truncate">{place.name}</h3>
-        <p className="text-gray-600 text-sm truncate">{place.location}</p>
+        {/* DB의 address를 사용하도록 변경 */}
+        <p className="text-gray-600 text-sm truncate">{place.address}</p>
       </div>
     </Link>
   );

@@ -2,60 +2,94 @@
 
 import { CategoryCarousel } from '@/components/CategoryCarousel';
 
-// 👇 주신 정보를 '관광지'와 '카페'에 추가하고, 주소 형식을 통일했습니다.
-const allData = {
-  행사: [
-    { id: 'e1', name: '파주북소리 축제', location: '지혜의숲', color: '#B3E5FC' },
-    { id: 'e2', name: '작가와의 만남 A', location: '문발리', color: '#C8E6C9' },
-    { id: 'e3', name: '어린이 책 놀이터', location: '나비나라', color: '#FFCCBC' },
-    { id: 'e4', name: '낭독 공연', location: '가람도서관', color: '#D1C4E9' },
-  ],
-  카페: [
-    // --- 기존 임시 데이터 ---
-    { id: 'c1', name: '카페 헤세', location: '헤세', color: '#FFCDD2' },
-    { id: 'c2', name: '밀크북', location: '이채', color: '#FFF9C4' },
-    { id: 'c3', name: '문발리 701', location: '문발리', color: '#E1BEE7' },
-    // --- 회원님이 추가한 데이터 ---
-    { id: 'c4', name: '문발리헌책방골목 북카페 블루박스', location: '경기 파주시 문발로 240-21', color: '#F8BBD0' },
-    { id: 'c5', name: '카페뮤지엄', location: '경기 파주시 회동길 445-4 혜지원 1층', color: '#DCEDC8' },
-    { id: 'c6', name: '아르디움 카페', location: '경기 파주시 회동길 337-20 아르디움', color: '#BBDEFB' },
-    { id: 'c7', name: '메디테리움 북카페', location: '경기 파주시 회동길 338 1층 메디테리움', color: '#D7CCC8' },
-    { id: 'c8', name: '목공 북카페 목요일', location: '경기 파주시 회동길 363-15 101호', color: '#CFD8DC' },
-    { id: 'c9', name: '북카페 눈', location: '경기 파주시 회동길 125-11 효형출판 1층', color: '#B3E5FC' },
-    { id: 'c10', name: '카페 모음', location: '경기 파주시 회동길 530-20 명필름 아트센터 1층', color: '#C8E6C9' },
-    { id: 'c11', name: '갤러리 카페 종이와 나무', location: '경기 파주시 회동길 445-1 A동 101호', color: '#FFCCBC' },
-    { id: 'c12', name: '북카페 파랑', location: '경기 파주시 회동길 337-16', color: '#D1C4E9' },
-  ],
-  식당: [
-    { id: 'r1', name: '이탈리안 레스토랑', location: '지노', color: '#F8BBD0' },
-    { id: 'r2', name: '한정식 맛집', location: '심학산', color: '#DCEDC8' },
-  ],
-  관광지: [
-    // --- 기존 임시 데이터 ---
-    { id: 't1', name: '지혜의 숲', location: '아시아출판문화정보센터', color: '#BBDEFB' },
-    { id: 't2', name: '롯데 프리미엄 아울렛', location: '문발IC', color: '#D7CCC8' },
-    { id: 't3', name: '헤이리 예술마을', location: '헤이리', color: '#CFD8DC' },
-    // --- 회원님이 추가한 데이터 ---
-    { id: 't4', name: '열화당 책박물관', location: '경기 파주시 광인사길 25 열화당', color: '#B3E5FC' },
-    { id: 't5', name: '명필름 아트센터', location: '경기 파주시 회동길 530-20', color: '#C8E6C9' },
-    { id: 't6', name: '미메시스 아트 뮤지엄', location: '경기 파주시 문발로 253', color: '#FFCCBC' },
-    { id: 't7', name: '보리책놀이터', location: '경기 파주시 직지길 492 도서출판보리', color: '#D1C4E9' },
-    { id: 't8', name: '이가고서점', location: '경기 파주시 광인사길 189 서강출판사 1층,2층', color: '#FFCDD2' },
-    { id: 't9', name: '출판도시 활판공방', location: '경기 파주시 문발로 203', color: '#FFF9C4' },
-  ]
-};
+// 1. 백엔드 API 주소
+const API_BASE = 'http://localhost:8000/api';
 
-const categories = ['행사', '카페', '식당', '관광지'];
+// 2. [수정] categoriesConfig에 'description' 키와 문구를 추가합니다.
+const categoriesConfig = [
+  { 
+    title: '행사', 
+    slug: 'events', 
+    description: '어, 이번 주말에 뭐 한다고?', 
+    data: [] // 데이터 없음
+  },
+  { 
+    title: '북카페', 
+    slug: 'book-cafe',
+    description: '커피는 핑계일 뿐, 활자에 중독되고 싶어'
+  },
+  { 
+    title: '브런치', 
+    slug: 'brunch',
+    description: '아침과 점심 사이, 그 완벽한 행복의 순간'
+  },
+  { 
+    title: '야외카페', 
+    slug: 'outdoor-cafe',
+    description: '일단 나와! 커피는 맑은 공기 마시면서'
+  },
+  { 
+    title: '대형카페', 
+    slug: 'large-cafe',
+    description: '자리 맡을 걱정 없이, 일단 눕고(?) 시작하는 여유'
+  },
+  { 
+    title: '주변 관광지', 
+    slug: 'tourist-spots',
+    description: '커피 배 채웠으면, 이제 감성 배 채울 시간',
+    data: [] // 데이터 없음
+  },
+];
 
-export default function HomePage() {
+// ... (fetchPlaces 함수는 동일)
+async function fetchPlaces(slug) {
+  if (!slug) return []; 
+  try {
+    const res = await fetch(`${API_BASE}/places/${slug}`, {
+      cache: 'no-store',
+    });
+    if (!res.ok) {
+      console.warn(`Failed to fetch ${slug}: ${res.status}`);
+      return [];
+    }
+    return res.json();
+  } catch (error) {
+    console.error(`Error fetching ${slug}:`, error);
+    return [];
+  }
+}
+
+// ... (HomePage 컴포넌트)
+export default async function HomePage() {
+  
+  const allDataPromises = categoriesConfig.map(async (category) => {
+    const places = category.data 
+      ? category.data 
+      : await fetchPlaces(category.slug);
+      
+    // 3. [수정] return 객체에 description을 추가합니다.
+    return {
+      title: category.title,
+      description: category.description, // 👈 이 줄 추가
+      places: places,
+    };
+  });
+
+  const categoriesWithData = await Promise.all(allDataPromises);
+
   return (
-    <main className="p-8">
-      {categories.map((categoryTitle) => (
-        <CategoryCarousel
-          key={categoryTitle}
-          title={categoryTitle}
-          places={allData[categoryTitle]}
-        />
+    // 여백 조정한 (max-w-6xl) main 태그
+    <main className="max-w-6xl mx-auto p-8">
+      {categoriesWithData.map((category) => (
+        category.places.length > 0 && (
+          // 4. [수정] CategoryCarousel에 description prop을 전달합니다.
+          <CategoryCarousel
+            key={category.title}
+            title={category.title}
+            description={category.description} // 👈 이 줄 추가
+            places={category.places}
+          />
+        )
       ))}
     </main>
   );

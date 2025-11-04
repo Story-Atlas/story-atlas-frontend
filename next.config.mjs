@@ -1,6 +1,8 @@
+// next.config.mjs
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 기존 Pexels 이미지 허용 설정 (그대로 둡니다)
+  // ... (images: { ... } 부분은 그대로 둡니다)
   images: {
     remotePatterns: [
       {
@@ -12,7 +14,7 @@ const nextConfig = {
     ],
   },
 
-  // 👇 ⭐️ 이 부분이 Base64(data:)를 허용하는 새 설정입니다.
+  // CSP: Base64(data:) 이미지를 허용하는 보안 설정
   async headers() {
     return [
       {
@@ -20,10 +22,25 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            // 'self'는 우리 도메인, data:는 Base64 이미지를 허용한다는 뜻입니다.
-            value: "img-src 'self' data: images.pexels.com;",
+            
+            // 👇 여기에 DB에 저장된 이미지의 도메인을 띄어쓰기로 추가합니다.
+            //    (예: 구글, 네이버 검색 등에서 가져온 이미지 도메인)
+            value: "img-src 'self' data: images.pexels.com googleusercontent.com *.googleusercontent.com search.pstatic.net *.pstatic.net;",
+            
+            // *.googleusercontent.com 는 lh3.googleusercontent.com 등을 모두 허용
+            // *.pstatic.net 는 Naver 이미지 도메인을 허용
           },
         ],
+      },
+    ];
+  },
+
+  // ... (rewrites 부분은 그대로 둡니다)
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:8000/api/:path*',
       },
     ];
   },

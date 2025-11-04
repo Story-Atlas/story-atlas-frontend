@@ -1,54 +1,68 @@
 // src/components/CategoryCarousel.js
-
 "use client";
 
 import { useRef } from 'react';
-import {PlaceCard} from '@/components/PlaceCard'; // PlaceCard import 방식 확인 (default/named)
+import { PlaceCard } from '@/components/PlaceCard';
 
-export function CategoryCarousel({ title, places }) {
+export function CategoryCarousel({ title, description, places }) {
   const scrollRef = useRef(null);
 
   const scroll = (direction) => {
     if (scrollRef.current) {
-      const scrollAmount = direction === 'left' ? -260 : 260; // 카드 너비 + 여백
+      // 카드 너비(w-72 = 288px) + 카드 간격(space-x-4 = 16px) = 304px
+      const scrollAmount = direction === 'left' ? -304 : 304;
       scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
 
   return (
-    <section className="mb-12 relative"> {/* relative 추가 */}
+    <section className="mb-12"> 
 
-      {/* 캐러셀 제목 */}
-      <h2 className="text-2xl font-bold mb-4">{title}</h2>
+      {/* 제목과 설명 (이것들이 기준 너비가 됩니다) */}
+      <h2 className="text-2xl font-bold mb-4 font-title">{title}</h2>
+      {description && (
+        <p className="text-lg text-gray-600 mb-4 -mt-2">
+          {description}
+        </p>
+      )}
 
-      {/* 화살표 버튼은 스크롤 컨테이너 바깥, but section 안에 */}
-      <div className="absolute inset-y-0 left-0 flex items-center z-10"> {/* 왼쪽 화살표 */}
-        <button 
-          onClick={() => scroll('left')} 
-          className="p-2 text-gray-700 hover:text-gray-900 focus:outline-none" // 스타일 변경
-          aria-label="스크롤 왼쪽으로"
+      {/* 👇 [수정] flex 컨테이너에 음수 마진(-mx-10)을 추가합니다. */}
+      {/* (버튼 너비만큼(w-10) 양쪽으로 당겨서 스크롤 영역 너비를 확보합니다) */}
+      <div className="flex items-center -mx-10">
+        
+        {/* 1. 왼쪽 화살표 (w-10 너비를 가진 래퍼로 감싸기) */}
+        <div className="w-10 text-center">
+          <button 
+            onClick={() => scroll('left')} 
+            className="p-2 text-gray-700 hover:text-gray-900 focus:outline-none"
+            aria-label="스크롤 왼쪽으로"
+          >
+            <ChevronLeftIcon />
+          </button>
+        </div>
+
+        {/* 2. [수정] 스크롤 영역 (flex-1 유지) */}
+        {/* (모든 스크롤바 숨기기 코드 제거 -> 스크롤바가 다시 보입니다) */}
+        <div
+          ref={scrollRef}
+          className="flex-1 flex overflow-x-auto space-x-4 p-4 scroll-smooth"
         >
-          <ChevronLeftIcon />
-        </button>
-      </div>
-      <div className="absolute inset-y-0 right-0 flex items-center z-10"> {/* 오른쪽 화살표 */}
-        <button 
-          onClick={() => scroll('right')} 
-          className="p-2 text-gray-700 hover:text-gray-900 focus:outline-none" // 스타일 변경
-          aria-label="스크롤 오른쪽으로"
-        >
-          <ChevronRightIcon />
-        </button>
-      </div>
+          {places.map((place) => (
+            <PlaceCard key={place.id} place={place} />
+          ))}
+        </div>
 
-      {/* 가로 스크롤이 될 카드 목록 컨테이너 */}
-      <div
-        ref={scrollRef}
-        className="flex overflow-x-auto space-x-4 p-4 scroll-smooth -mx-4" // 좌우 패딩을 만회하기 위한 -mx-4
-      >
-        {places.map((place) => (
-          <PlaceCard key={place.id} place={place} />
-        ))}
+        {/* 3. 오른쪽 화살표 (w-10 너비를 가진 래퍼로 감싸기) */}
+        <div className="w-10 text-center">
+          <button 
+            onClick={() => scroll('right')} 
+            className="p-2 text-gray-700 hover:text-gray-900 focus:outline-none"
+            aria-label="스크롤 오른쪽으로"
+          >
+            <ChevronRightIcon />
+          </button>
+        </div>
+
       </div>
     </section>
   );
