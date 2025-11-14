@@ -1,0 +1,177 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  
+  /* 👇 [수정됨] layout.js에서 정의한 CSS 변수를 가져옵니다 */
+  /* (변수 이름을 layout.js와 통일합니다) */
+  --font-br-firma: var(--font-br-firma);
+  --font-nanum-square: var(--font-nanum-square);
+  --font-pretendard: var(--font-pretendard);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: #000000 !important; /* 완전한 검은색 강제 적용 */
+  
+  /* 👇 기본 폰트를 Pretendard Medium으로 설정 (본문용) */
+  font-family: var(--font-pretendard), -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard Variable", Pretendard, Roboto, "Noto Sans KR", "Segoe UI", "Malgun Gothic", sans-serif;
+  font-weight: 500; /* Medium */
+}
+
+/* 👇 [수정됨] BR Firma Black 폰트 클래스 */
+/* (layout.js, [id]/page.js에서 사용한 .font-title 클래스명으로 통일) */
+.font-title {
+  font-family: var(--font-pretendard), -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard Variable", Pretendard, Roboto, "Noto Sans KR", "Segoe UI", "Malgun Gothic", sans-serif;
+  font-weight: 700; /* Bold */
+}
+
+/* 👇 [추가] Pretendard 폰트 클래스 */
+.font-pretendard {
+  font-family: var(--font-pretendard), -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard Variable", Pretendard, Roboto, "Noto Sans KR", "Segoe UI", "Malgun Gothic", sans-serif;
+}
+
+/* 👇 제목/목차용 굵은 Pretendard 폰트 */
+.font-pretendard-bold {
+  font-family: var(--font-pretendard), -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard Variable", Pretendard, Roboto, "Noto Sans KR", "Segoe UI", "Malgun Gothic", sans-serif;
+  font-weight: 700; /* Bold */
+}
+
+/* 👇 본문용 중간 굵기 Pretendard 폰트 */
+.font-pretendard-medium {
+  font-family: var(--font-pretendard), -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard Variable", Pretendard, Roboto, "Noto Sans KR", "Segoe UI", "Malgun Gothic", sans-serif;
+  font-weight: 500; /* Medium */
+}
+
+/* 👇 기본 제목 스타일 (굵은 Pretendard) */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-pretendard), -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard Variable", Pretendard, Roboto, "Noto Sans KR", "Segoe UI", "Malgun Gothic", sans-serif;
+  font-weight: 700; /* Bold */
+}
+
+/* 👇 본문 스타일 (중간 굵기 Pretendard, 더 검은색) */
+p {
+  font-family: var(--font-pretendard), -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard Variable", Pretendard, Roboto, "Noto Sans KR", "Segoe UI", "Malgun Gothic", sans-serif;
+  font-weight: 500; /* Medium */
+  color: #000000 !important; /* 완전한 검은색 강제 적용 */
+}
+
+/* 👇 [추가] select 요소 스타일 (텍스트 깨짐 방지) */
+select {
+  font-family: var(--font-pretendard), -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard Variable", Pretendard, Roboto, "Noto Sans KR", "Segoe UI", "Malgun Gothic", sans-serif !important;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+select option {
+  font-family: var(--font-pretendard), -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard Variable", Pretendard, Roboto, "Noto Sans KR", "Segoe UI", "Malgun Gothic", sans-serif !important;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 👇 [추가] 필기체 폰트 클래스 (Dancing Script) */
+.font-dancing-script {
+  font-family: var(--font-dancing-script), cursive;
+}
+
+/* 👇 [추가] KoPub 바탕체 폰트 클래스 */
+.font-kopub-batang {
+  font-family: var(--font-kopub-batang), "KoPub Batang", "KoPub 바탕체", serif;
+}
+
+/* 👇 [추가] 미생체 폰트 클래스 */
+.font-misengchae {
+  font-family: var(--font-misengchae), "Misengchae", "미생체", cursive;
+}
+
+/* 👇 [추가] BM 을지로체 폰트 클래스 */
+.font-bm-euljiro {
+  font-family: var(--font-bm-euljiro), "BM Euljiro", "배달의민족 을지로체", sans-serif;
+}
+
+/* 👇 [추가] 스크롤바 숨기기 유틸리티 클래스 */
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* 👇 [추가] 책갈피 페이지 애니메이션 */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0);
+  }
+  50% {
+    transform: translateY(-20px) rotate(5deg);
+  }
+}
+
+@keyframes float-delayed {
+  0%, 100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-25px) rotate(3deg);
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0) rotate(2deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(-2deg);
+  }
+}
+
+@keyframes blob {
+  0% {
+    transform: translate(0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0) scale(1);
+  }
+}
+
+.animate-float {
+  animation: 6s ease-in-out infinite float;
+}
+
+.animate-float-delayed {
+  animation: 7s ease-in-out infinite float-delayed;
+}
+
+.animate-float-slow {
+  animation: 8s ease-in-out infinite float-slow;
+}
+
+.animate-blob {
+  animation: 7s infinite blob;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}

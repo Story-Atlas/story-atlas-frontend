@@ -1,140 +1,183 @@
 // src/components/CategoryCarousel.js
 "use client";
 
-// 1. [수정] 'useState'를 import 합니다.
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { PlaceCard } from '@/components/PlaceCard';
+import { EventCard } from '@/components/EventCard';
+import { SpotCard } from '@/components/SpotCard';
 
-export function CategoryCarousel({ title, description, places }) {
+// 아이콘 SVG
+function ChevronLeftIcon({ className = "h-5 w-5" }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+    </svg>
+  );
+}
+
+function ChevronRightIcon({ className = "h-5 w-5" }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+    </svg>
+  );
+}
+
+function ExternalLinkIcon({ className = "h-3.5 w-3.5" }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25m5.25 0v5.25" />
+    </svg>
+  );
+}
+
+export function CategoryCarousel({ title, description, places, events, spots, link }) {
   const scrollRef = useRef(null);
   
-  // 2. [추가] 마우스 드래그 상태 관리를 위한 State
+  // places, events, 또는 spots 중 하나를 items로 통합
+  const items = (places && places.length > 0) ? places 
+    : (events && events.length > 0) ? events 
+    : (spots && spots.length > 0) ? spots 
+    : [];
+  
+  // 렌더링할 카드 타입 결정
+  const cardType = (places && places.length > 0) ? 'place' 
+    : (events && events.length > 0) ? 'event' 
+    : (spots && spots.length > 0) ? 'spot' 
+    : null;
+  
+  // 스크롤 가능 여부 확인
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  useEffect(() => {
+    const checkScroll = () => {
+      if (scrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        setCanScrollLeft(scrollLeft > 0);
+        setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+      }
+    };
+    
+    checkScroll();
+    const ref = scrollRef.current;
+    if (ref) {
+      ref.addEventListener('scroll', checkScroll);
+      return () => ref.removeEventListener('scroll', checkScroll);
+    }
+  }, [items]);
+
+  const scroll = (direction) => {
+    if (scrollRef.current) {
+      const scrollAmount = direction === 'left' ? -300 : 300;
+      scrollRef.current.scrollTo({
+        left: scrollRef.current.scrollLeft + scrollAmount,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  // 마우스 드래그 상태 관리
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
 
-  // 3. [추가] 마우스 이벤트 핸들러
   const onMouseDown = (e) => {
     setIsDragging(true);
-    // (e.pageX) - (scrollRef.current.offsetLeft)
     setStartX(e.pageX - scrollRef.current.offsetLeft);
     setScrollLeft(scrollRef.current.scrollLeft);
-    // 드래그 시 커서 변경 및 텍스트 선택 방지
     scrollRef.current.style.cursor = 'grabbing';
     scrollRef.current.style.userSelect = 'none';
   };
 
   const onMouseLeave = () => {
     setIsDragging(false);
-    scrollRef.current.style.cursor = 'grab';
-    scrollRef.current.style.userSelect = 'auto';
+    if (scrollRef.current) {
+      scrollRef.current.style.cursor = 'grab';
+      scrollRef.current.style.userSelect = 'auto';
+    }
   };
 
   const onMouseUp = () => {
     setIsDragging(false);
-    scrollRef.current.style.cursor = 'grab';
-    scrollRef.current.style.userSelect = 'auto';
-  };
-
-  const onMouseMove = (e) => {
-    if (!isDragging) return;
-    e.preventDefault();
-    const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX) * 1.5; // 드래그 속도 (2배)
-    scrollRef.current.scrollLeft = scrollLeft - walk;
-  };
-
-  // 화살표 버튼 스크롤 (기존 로직)
-  const scroll = (direction) => {
     if (scrollRef.current) {
-      const scrollAmount = direction === 'left' ? -304 : 304;
-      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      scrollRef.current.style.cursor = 'grab';
+      scrollRef.current.style.userSelect = 'auto';
     }
   };
 
-  return (
-    <section className="mb-12"> 
-      {/* 제목/설명 (동일) */}
-      <h2 className="text-2xl font-bold mb-4 font-title">{title}</h2>
-      {description && (
-        <p className="text-lg text-gray-600 mb-4 -mt-2">
-          {description}
-        </p>
-      )}
+  const onMouseMove = (e) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
 
-      {/* [수정] -mx-10 (화살표 너비 보정) */}
-      <div className="flex items-center -mx-10">
-        
-        {/* 왼쪽 화살표 (동일) */}
-        <div className="w-10 text-center">
-          <button 
-            onClick={() => scroll('left')} 
-            className="p-2 text-gray-700 hover:text-gray-900 focus:outline-none"
-            aria-label="스크롤 왼쪽으로"
+  return (
+    <section className="py-12"> 
+      {/* Header */}
+      <div className="mb-6 flex items-end justify-between">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <h2 className="text-2xl font-bold">{title}</h2>
+            {link && (
+              <a
+                href={link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm text-[hsl(var(--accent-brown))] hover:underline"
+              >
+                <span>더보기</span>
+                <ExternalLinkIcon />
+              </a>
+            )}
+          </div>
+          {description && (
+            <p className="text-sm text-gray-600">{description}</p>
+          )}
+        </div>
+
+        {/* Navigation Buttons */}
+        <div className="hidden md:flex items-center gap-2">
+          <button
+            onClick={() => scroll('left')}
+            disabled={!canScrollLeft}
+            className="h-10 w-10 rounded-full border bg-background text-foreground hover:bg-accent hover:text-accent-foreground transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center"
           >
             <ChevronLeftIcon />
           </button>
-        </div>
-
-        {/* 4. [수정] 스크롤 컨테이너 */}
-        <div
-          ref={scrollRef}
-          // (가) 마우스 이벤트 핸들러 추가
-          onMouseDown={onMouseDown}
-          onMouseLeave={onMouseLeave}
-          onMouseUp={onMouseUp}
-          onMouseMove={onMouseMove}
-          // (나) 스크롤바 숨김 클래스 'carousel-scroll-container' 추가
-          // (다) 'grab' 커서 기본 적용
-          style={{ cursor: 'grab' }}
-          className="flex-1 flex overflow-x-auto space-x-4 p-4 scroll-smooth carousel-scroll-container"
-        >
-          {places.map((place) => (
-            <PlaceCard key={place.id} place={place} />
-          ))}
-        </div>
-
-        {/* 오른쪽 화살표 (동일) */}
-        <div className="w-10 text-center">
-          <button 
-            onClick={() => scroll('right')} 
-            className="p-2 text-gray-700 hover:text-gray-900 focus:outline-none"
-            aria-label="스크롤 오른쪽으로"
+          <button
+            onClick={() => scroll('right')}
+            disabled={!canScrollRight}
+            className="h-10 w-10 rounded-full border bg-background text-foreground hover:bg-accent hover:text-accent-foreground transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center"
           >
             <ChevronRightIcon />
           </button>
         </div>
-
       </div>
 
-      {/* 5. [추가] 스크롤바 숨김 CSS (컴포넌트 내부에 직접 주입) */}
-      <style jsx global>{`
-        .carousel-scroll-container::-webkit-scrollbar {
-          display: none; /* Chrome, Safari, Opera */
-        }
-        .carousel-scroll-container {
-          -ms-overflow-style: none;  /* IE and Edge */
-          scrollbar-width: none;  /* Firefox */
-        }
-      `}</style>
-
+      {/* Carousel */}
+      <div
+        ref={scrollRef}
+        onMouseDown={onMouseDown}
+        onMouseLeave={onMouseLeave}
+        onMouseUp={onMouseUp}
+        onMouseMove={onMouseMove}
+        style={{ cursor: 'grab' }}
+        className="flex gap-6 overflow-x-auto pb-4 hide-scrollbar"
+      >
+        {items.map((item) => {
+          if (cardType === 'place') {
+            return <PlaceCard key={item.id} place={item} />;
+          } else if (cardType === 'event') {
+            return <EventCard key={item.id} event={item} />;
+          } else if (cardType === 'spot') {
+            return <SpotCard key={item.id} spot={item} />;
+          }
+          return null;
+        })}
+      </div>
     </section>
-  );
-}
-
-// 아이콘 SVG (동일)
-function ChevronLeftIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-    </svg>
-  );
-}
-
-function ChevronRightIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
-      <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-    </svg>
   );
 }

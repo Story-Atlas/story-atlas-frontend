@@ -1,5 +1,27 @@
 // src/app/places/[id]/page.js
 
+import { Header } from '@/components/Header';
+import Link from 'next/link';
+
+// 아이콘 컴포넌트
+function MapPinIcon({ className }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+    </svg>
+  );
+}
+
+function ExternalLinkIcon({ className }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+    </svg>
+  );
+}
+
+
 // 1. [수정] localFont 임포트 *제거*
 // (폰트는 layout.js에서 전역으로 로드됩니다)
 // import localFont from 'next/font/local'; // <- 이 줄이 없어야 합니다.
@@ -9,7 +31,8 @@
 
 // --- (데이터 가져오는 getPlaceData 함수는 동일합니다) ---
 async function getPlaceData(id) {
-  const API_BASE = 'http://localhost:8000/api';
+  // 서버 컴포넌트에서는 절대 URL 필요
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
   try {
     const res = await fetch(`${API_BASE}/places/${id}`, {
       cache: 'no-store',
@@ -60,8 +83,10 @@ export default async function PlaceDetailPage({ params }) {
 
   // --- (렌더링 UI) ---
   return (
-    <main className="max-w-4xl mx-auto">
-      <div className="w-full h-80 sm:h-96 md:h-[500px] bg-gray-200">
+    <>
+      <Header sticky={false} />
+      <main className="max-w-4xl mx-auto">
+        <div className="w-full h-80 sm:h-96 md:h-[500px] bg-gray-200">
         <img 
           src={place.main_photo_url || 'https://via.placeholder.com/1000x500.png?text=No+Image'} 
           alt={place.name}
@@ -84,21 +109,59 @@ export default async function PlaceDetailPage({ params }) {
 
         {/* 5. [수정] 본문은 자동으로 NanumSquareNeo가 적용됩니다 */}
         {place.summary.paragraph1 && (
-          <p className="text-lg text-gray-700 leading-relaxed">
+          <p className="text-lg text-gray-900 leading-relaxed">
             {place.summary.paragraph1}
           </p>
         )}
         {place.summary.paragraph2 && (
-          <p className="text-lg text-gray-700 leading-relaxed mt-6">
+          <p className="text-lg text-gray-900 leading-relaxed mt-6">
             {place.summary.paragraph2}
           </p>
         )}
         {place.summary.paragraph3 && (
-          <p className="text-lg text-gray-700 leading-relaxed mt-6">
+          <p className="text-lg text-gray-900 leading-relaxed mt-6">
             {place.summary.paragraph3}
           </p>
         )}
+
+        {/* 네이버 지도 링크 박스 */}
+        {place.naver_map_url && (
+          <Link
+            href={place.naver_map_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block mt-8"
+          >
+            <div className="bg-gradient-to-br from-[hsl(var(--accent-brown))] to-[hsl(var(--accent-brown))]/80 text-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] group">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-4 flex-1">
+                  <div className="bg-white/20 rounded-full p-3 group-hover:bg-white/30 transition-colors">
+                    <MapPinIcon className="w-6 h-6" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-white mb-2 flex items-center gap-2 font-semibold">
+                      찾아오시는 길
+                      <ExternalLinkIcon className="w-4 h-4 opacity-70" />
+                    </h3>
+                    {place.address && (
+                      <p className="text-white/90 mb-2">{place.address}</p>
+                    )}
+                    <p className="text-white/70 text-sm">
+                      네이버 지도에서 위치 확인하기
+                    </p>
+                  </div>
+                </div>
+                <div className="ml-2 mt-1">
+                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                    <span className="text-white text-xl">→</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Link>
+        )}
       </article>
     </main>
+    </>
   );
 }

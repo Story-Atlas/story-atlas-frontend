@@ -1,58 +1,172 @@
 // src/app/layout.js
 
 import localFont from 'next/font/local';
-import Link from 'next/link';
+import { Dancing_Script } from 'next/font/google';
 import "./globals.css"; // 전역 CSS
+import { WebsiteStructuredData, OrganizationStructuredData } from '@/components/StructuredData';
 
-// 1. [수정] BR Firma Black 로드 (경로에 띄어쓰기 포함)
-const brFirmaBlack = localFont({
-  src: '../../public/fonts/BR Firma Black.otf',
-  weight: '900', // Black
-  style: 'normal',
+// 1. BR Firma Black 폰트 (파일이 없으면 Pretendard로 대체)
+// const brFirmaBlack = localFont({
+//   src: '../../public/fonts/BR Firma Black.otf',
+//   weight: '900',
+//   style: 'normal',
+//   display: 'swap',
+//   variable: '--font-br-firma',
+// });
+
+// 2. NanumSquareNeo Regular 폰트 (파일이 없으면 Pretendard로 대체)
+// const nanumSquareNeo = localFont({
+//   src: '../../public/fonts/NanumSquareNeoOTF-Rg.otf',
+//   weight: '400',
+//   style: 'normal',
+//   display: 'swap',
+//   variable: '--font-nanum-square',
+// });
+
+// 3. 필기체 폰트 (Dancing Script) 로드
+const dancingScript = Dancing_Script({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
   display: 'swap',
-  variable: '--font-br-firma', // CSS 변수
+  variable: '--font-dancing-script', // CSS 변수
 });
 
-// 2. [수정] NanumSquareNeo Regular 로드 (경로 수정)
-const nanumSquareNeo = localFont({
-  src: '../../public/fonts/NanumSquareNeoOTF-Rg.otf',
-  weight: '400', // Regular
-  style: 'normal',
+// 4. Pretendard 가변 폰트 로드
+const pretendard = localFont({
+  src: '../../public/fonts/PretendardVariable.woff2',
   display: 'swap',
-  variable: '--font-nanum-square', // CSS 변수
+  weight: '45 920', // 가변 폰트 weight 범위
+  variable: '--font-pretendard', // CSS 변수
+});
+
+// 5. KoPub 바탕체 폰트 로드
+const kopubBatang = localFont({
+  src: [
+    {
+      path: '../../public/fonts/kopub-batang/KoPubWorld Batang_Pro Medium.otf',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../../public/fonts/kopub-batang/KoPubWorld Batang_Pro Bold.otf',
+      weight: '700',
+      style: 'normal',
+    },
+    {
+      path: '../../public/fonts/kopub-batang/KoPubWorld Batang_Pro Light.otf',
+      weight: '300',
+      style: 'normal',
+    },
+  ],
+  display: 'swap',
+  variable: '--font-kopub-batang',
+  fallback: ['serif'],
+});
+
+// 6. 미생체 폰트 로드
+const misengchae = localFont({
+  src: [
+    {
+      path: '../../public/fonts/misengchae/SDMiSaeng.ttf',
+      weight: '400',
+      style: 'normal',
+    },
+  ],
+  display: 'swap',
+  variable: '--font-misengchae',
+  fallback: ['cursive'],
+});
+
+// 7. BM 을지로체 폰트 로드
+const bmEuljiro = localFont({
+  src: [
+    {
+      path: '../../public/fonts/bm-euljiro/BMEULJIRO.otf',
+      weight: '400',
+      style: 'normal',
+    },
+  ],
+  display: 'swap',
+  variable: '--font-bm-euljiro',
+  fallback: ['sans-serif'],
 });
 
 export const metadata = {
-  title: "Story Atlas",
-  description: "출판단지 아카이브",
+  title: {
+    default: "Story Atlas | 파주 출판단지 아카이브",
+    template: "%s | Story Atlas",
+  },
+  description: "파주 출판단지의 행사, 북카페, 관광지를 한눈에. Book BTI로 나에게 맞는 장소를 찾아보세요.",
+  keywords: ["파주 출판단지", "북카페", "파주 관광", "출판도시", "Book BTI", "파주 행사", "파주 카페"],
+  authors: [{ name: "Story Atlas" }],
+  creator: "Story Atlas",
+  publisher: "Story Atlas",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL('https://storyatlas.site'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'ko_KR',
+    url: 'https://storyatlas.site',
+    siteName: 'Story Atlas',
+    title: 'Story Atlas | 파주 출판단지 아카이브',
+    description: '파주 출판단지의 행사, 북카페, 관광지를 한눈에. Book BTI로 나에게 맞는 장소를 찾아보세요.',
+    images: [
+      {
+        url: '/logo.png',
+        width: 1200,
+        height: 630,
+        alt: 'Story Atlas 로고',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Story Atlas | 파주 출판단지 아카이브',
+    description: '파주 출판단지의 행사, 북카페, 관광지를 한눈에.',
+    images: ['/logo.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icon.png', type: 'image/png', sizes: '32x32' },
+    ],
+    shortcut: '/favicon.svg',
+    apple: '/icon.png',
+  },
+  verification: {
+    // Google Search Console, Naver Webmaster 등에서 발급받은 인증 코드 추가
+    // google: 'your-google-verification-code',
+    // naver: 'your-naver-verification-code',
+  },
 };
 
 export default function RootLayout({ children }) {
   return (
-    // 3. [수정] html 태그에 두 폰트 변수를 모두 적용
-    <html lang="ko" className={`${brFirmaBlack.variable} ${nanumSquareNeo.variable}`}>
+    // 3. [수정] html 태그에 폰트 변수들을 모두 적용
+    <html lang="ko" className={`${dancingScript.variable} ${pretendard.variable} ${kopubBatang.variable} ${misengchae.variable} ${bmEuljiro.variable}`}>
+      <head>
+        <WebsiteStructuredData />
+        <OrganizationStructuredData />
+      </head>
       <body>
-        <header className="w-full bg-white shadow-md border-b border-gray-200 sticky top-0 z-10">
-          {/* [수정] 여백 max-w-6xl 적용, items-center로 수직 중앙 정렬 */}
-          <nav className="max-w-6xl mx-auto p-4 flex items-center gap-6">
-            
-            {/* 4. [추가] Story Atlas 로고 (font-title 클래스 사용 예정) */}
-            <Link href="/" className="flex items-center gap-2">
-              <span className="font-title text-2xl font-extrabold text-blue-600">
-                Story Atlas
-              </span>
-            </Link>
-
-            {/* 5. 기존 링크들 */}
-            <Link href="/" className="font-bold text-gray-800 hover:text-blue-600">
-              홈 (장소/행사)
-            </Link>
-            <Link href="/bookmark" className="font-bold text-gray-800 hover:text-blue-600">
-              책갈피 만들기
-            </Link>
-          </nav>
-        </header>
-
         {children}
       </body>
     </html>
