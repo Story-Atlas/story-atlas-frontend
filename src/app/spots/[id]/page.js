@@ -3,7 +3,8 @@
 import { Header } from '@/components/Header';
 import { SpotTabs } from '@/components/SpotTabs';
 import { SpotImage } from '@/components/SpotImage';
-import Link from 'next/link';
+// import { ViewCounter } from '@/components/ViewCounter';
+import { NaverMapLink } from '@/components/NaverMapLink';
 
 // 아이콘 컴포넌트
 function MapPinIcon({ className }) {
@@ -97,12 +98,7 @@ export default async function SpotDetailPage({ params }) {
         
         {/* 네이버 지도 링크 박스 */}
         {spot.naver_map_url && (
-          <Link
-            href={spot.naver_map_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block mt-8"
-          >
+          <NaverMapLink type="spot" id={spot.id} url={spot.naver_map_url} address={spot.address}>
             <div className="bg-gradient-to-br from-[hsl(var(--accent-brown))] to-[hsl(var(--accent-brown))]/80 text-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] group">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
@@ -129,7 +125,7 @@ export default async function SpotDetailPage({ params }) {
                 </div>
               </div>
             </div>
-          </Link>
+          </NaverMapLink>
         )}
       </article>
     </main>

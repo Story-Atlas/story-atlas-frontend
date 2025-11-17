@@ -152,6 +152,7 @@ export function PlaceCard({ place }) {
 
     setIsRecommending(true);
     try {
+      const apiBase = typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_API_URL || '/api') : '/api';
       const res = await fetch(`${apiBase}/place-recommendation/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -194,6 +195,8 @@ export function PlaceCard({ place }) {
   const headline = place.summary?.headline || '';
   // 관광지(spot)인 경우 /spots로, 일반 장소(place)인 경우 /places로 링크
   const detailUrl = placeType === 'spot' ? `/spots/${placeId}` : `/places/${placeId}`;
+  
+  // 조회수 표시 제거 (백엔드 조회수 증가 기능은 유지)
 
   return (
     <div className="group flex-shrink-0 w-72 cursor-pointer">

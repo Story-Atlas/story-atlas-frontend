@@ -3,7 +3,7 @@
 // BookmarkForm을 가져옵니다. (중괄호 { } 여부는 본인 코드에 맞게)
 import Link from 'next/link';
 import { Header } from '@/components/Header';
-import { BookmarkForm } from '@/components/BookmarkForm';
+import BookmarkForm from '@/components/BookmarkForm';
 
 export default function BookmarkPage() {
   return (

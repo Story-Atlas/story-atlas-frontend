@@ -71,6 +71,12 @@ const nextConfig = {
       },
       {
         protocol: 'http',
+        hostname: 'localhost',
+        port: '8001',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
         hostname: '49.50.137.233',
         pathname: '/media/**',
       },
@@ -101,7 +107,7 @@ const nextConfig = {
             
             // 👇 여기에 DB에 저장된 이미지의 도메인을 띄어쓰기로 추가합니다.
             //    (예: 구글, 네이버 검색 등에서 가져온 이미지 도메인)
-            value: "img-src 'self' data: images.pexels.com googleusercontent.com *.googleusercontent.com search.pstatic.net *.pstatic.net via.placeholder.com;",
+            value: "img-src 'self' data: http://localhost:8001 http://localhost:8000 images.pexels.com googleusercontent.com *.googleusercontent.com search.pstatic.net *.pstatic.net via.placeholder.com;",
             
             // *.googleusercontent.com 는 lh3.googleusercontent.com 등을 모두 허용
             // *.pstatic.net 는 Naver 이미지 도메인을 허용
@@ -118,8 +124,10 @@ const nextConfig = {
         source: '/api/:path*',
         destination: 'http://localhost:8000/api/:path*',
       },
-      // /media/ 경로는 Nginx가 직접 서빙하므로 rewrites 제거
-      // Nginx 설정에서 /media/ -> /home/story-atlas/backend/media/로 매핑됨
+      {
+        source: '/media/:path*',
+        destination: 'http://localhost:8000/media/:path*',
+      },
     ];
   },
 };

@@ -93,7 +93,7 @@ export default function BookBTIIntro() {
 
           {/* Additional Info */}
           <p className="text-center text-sm text-gray-500 mt-6">
-            약 2분 소요 · 총 4개의 질문
+            약 3분 소요 · 총 8개의 질문
           </p>
         </div>
       </div>

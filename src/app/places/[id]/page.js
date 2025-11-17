@@ -1,7 +1,8 @@
 // src/app/places/[id]/page.js
 
 import { Header } from '@/components/Header';
-import Link from 'next/link';
+// import { ViewCounter } from '@/components/ViewCounter';
+import { NaverMapLink } from '@/components/NaverMapLink';
 
 // 아이콘 컴포넌트
 function MapPinIcon({ className }) {
@@ -126,12 +127,7 @@ export default async function PlaceDetailPage({ params }) {
 
         {/* 네이버 지도 링크 박스 */}
         {place.naver_map_url && (
-          <Link
-            href={place.naver_map_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block mt-8"
-          >
+          <NaverMapLink type="place" id={place.id} url={place.naver_map_url} address={place.address}>
             <div className="bg-gradient-to-br from-[hsl(var(--accent-brown))] to-[hsl(var(--accent-brown))]/80 text-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] group">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
@@ -158,7 +154,7 @@ export default async function PlaceDetailPage({ params }) {
                 </div>
               </div>
             </div>
-          </Link>
+          </NaverMapLink>
         )}
       </article>
     </main>

@@ -7,11 +7,66 @@ import { Button } from '@/components/ui/button';
 import { PlaceCard } from '@/components/PlaceCard';
 import { SpotCard } from '@/components/SpotCard';
 import Link from 'next/link';
+import { getGuestUserId } from '@/utils/guestUser';
 
 // 서버 컴포넌트에서는 절대 URL 필요
 const API_BASE = typeof window === 'undefined'
   ? (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api')
   : (process.env.NEXT_PUBLIC_API_URL || '/api');
+
+// Express 서버의 getSpotImageUrl 함수와 동일한 로직
+function getSpotImageUrl(spotName) {
+  if (!spotName) return '/media/spots/default.jpg';
+  
+  const nameMapping = {
+    '열화당 책박물관': '열화당_책박물관.jpg',
+    '명필름 아트센터': '명필름_아트센터.jpg',
+    '미메시스 아트 뮤지엄': '미메시스_아트_뮤지엄.jpg',
+    '미소플레테 아틀리': '미소플레테_아틀리에.jpg',
+    '미소플레테 아틀리에': '미소플레테_아틀리에.jpg',
+    '미 소플레테 아틀리에': '미소플레테_아틀리에.jpg',
+    '도미넌트 인더스트': '도미넌트_인더스트리.jpg',
+    '도미넌트 인더스트리': '도미넌트_인더스트리.jpg',
+    '출판도시 활판공방': '출판도시_활판공방.jpg',
+    '지혜의숲': '지혜의숲.jpg',
+    '파주나비나라박물관': '파주나비나라박물관.jpg',
+    '활판인쇄박물관': '활판인쇄박물관.jpg',
+    '메디테리움 의학박물관': '메디테리움 의학박물관.jpg',
+  };
+  
+  let fileName;
+  if (spotName.includes('미소플레테') || spotName.includes('미 소플레테')) {
+    fileName = '미소플레테_아틀리에.jpg';
+  } else if (spotName.includes('도미넌트')) {
+    fileName = '도미넌트_인더스트리.jpg';
+  } else {
+    fileName = nameMapping[spotName] || spotName.replace(/\s+/g, '_') + '.jpg';
+  }
+  
+  // 상대 경로로 반환 (normalizeSpot에서 절대 경로로 변환)
+  return `/media/spots/${fileName}`;
+}
+
+// spot 데이터를 정규화하는 함수 (Express 서버처럼 처리)
+// 탐색탭과 동일하게 spot.name을 기반으로 image_url을 항상 생성
+function normalizeSpot(spot) {
+  if (!spot || !spot.name) return spot;
+  
+  // Express 서버의 getSpotImageUrl 로직과 동일하게 처리
+  const baseUrl = typeof window !== 'undefined' 
+    ? window.location.origin
+    : (process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000');
+  
+  // spot.name을 기반으로 image_url 생성 (Express 서버와 동일한 로직)
+  // 항상 spot.name을 기반으로 생성하여 탐색탭과 동일하게 처리
+  const relativeUrl = getSpotImageUrl(spot.name);
+  const imageUrl = `${baseUrl}${relativeUrl}`;
+  
+  return {
+    ...spot,
+    image_url: imageUrl
+  };
+}
 
 // 임시 데이터 (API 연동 전)
 const typeDataMap = {
@@ -102,12 +157,64 @@ function BookBTIResultContent() {
   const searchParams = useSearchParams();
   const [type, setType] = useState('');
   const [typeData, setTypeData] = useState(null);
+  const [aiReasoning, setAiReasoning] = useState(null); // AI 추론 문장
   const [recommendations, setRecommendations] = useState({ places: [], spots: [] });
   const [loading, setLoading] = useState(true);
   const [mbtiMatch, setMbtiMatch] = useState(null); // null: 미응답, true: 예, false: 아니요
+  const [actualMbti, setActualMbti] = useState(''); // 실제 MBTI 입력 값
+  const [isSaving, setIsSaving] = useState(false); // 저장 중 상태
+  const [guestUserId, setGuestUserId] = useState(null); // 익명 사용자 ID
 
   useEffect(() => {
+    // 익명 사용자 ID 가져오기
+    const userId = getGuestUserId();
+    setGuestUserId(userId);
+    
+    const resultKey = searchParams.get('key');
     const resultType = searchParams.get('type');
+    
+    // 새로운 방식: key 파라미터가 있으면 sessionStorage에서 AI 분석 결과 가져오기
+    if (resultKey) {
+      try {
+        const analysisDataJson = sessionStorage.getItem(resultKey);
+        if (!analysisDataJson) {
+          console.error('분석 결과를 찾을 수 없습니다');
+          router.push('/book-bti');
+          return;
+        }
+
+        const analysisData = JSON.parse(analysisDataJson);
+        
+        setType(analysisData.inferred_type);
+        setAiReasoning(analysisData.ai_reasoning);
+        
+        // 유형 정보 설정
+        const fallbackData = typeDataMap[analysisData.inferred_type] || typeDataMap['INFP'];
+        setTypeData({
+          bti_name: analysisData.type_description.name,
+          bti_description: analysisData.type_description.description,
+          backgroundColor: fallbackData.backgroundColor,
+        });
+        
+        // 추천 장소 설정
+        // spots를 Express 서버처럼 정규화
+        const processedSpots = (analysisData.recommendations.spots || []).map(normalizeSpot);
+        
+        setRecommendations({
+          places: analysisData.recommendations.places || [],
+          spots: processedSpots,
+        });
+        
+        setLoading(false);
+        return;
+      } catch (error) {
+        console.error('분석 데이터 파싱 오류:', error);
+        router.push('/book-bti');
+        return;
+      }
+    }
+    
+    // 기존 방식: type 파라미터로 유형 조회
     if (!resultType) {
       router.push('/book-bti');
       return;
@@ -152,7 +259,7 @@ function BookBTIResultContent() {
           (data.spots || []).forEach(spot => {
             if (!spotIdSet.has(spot.id)) {
               spotIdSet.add(spot.id);
-              uniqueSpots.push(spot);
+              uniqueSpots.push(normalizeSpot(spot)); // Express 서버처럼 정규화
             }
           });
           
@@ -179,7 +286,96 @@ function BookBTIResultContent() {
 
   const handleMbtiMatch = (isMatch) => {
     setMbtiMatch(isMatch);
-    // TODO: 서버에 응답 저장 (필요한 경우)
+    // "맞아요"를 선택한 경우 바로 저장
+    if (isMatch) {
+      saveResponse(true, null);
+    }
+    // "다른 유형이에요"를 선택한 경우 입력 필드만 표시 (저장은 나중에)
+  };
+
+  const saveResponse = async (isMatch, actualMbtiValue = null) => {
+    if (!guestUserId || !type) {
+      console.error('저장에 필요한 정보가 없습니다:', { guestUserId, type });
+      alert('저장에 필요한 정보가 없습니다. 페이지를 새로고침 후 다시 시도해주세요.');
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      // actual_mbti 값 결정: 파라미터가 있으면 우선 사용, 없으면 state 값 사용
+      const actualMbtiToSend = actualMbtiValue !== null ? actualMbtiValue : (actualMbti || null);
+      
+      // 디버깅용 로그
+      console.log('응답 저장 요청:', {
+        guest_user_id: guestUserId,
+        bti_code: type,
+        is_match: isMatch,
+        actual_mbti: actualMbtiToSend
+      });
+
+      const response = await fetch(`${API_BASE}/bookbti/responses`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          guest_user_id: guestUserId,
+          bti_code: type,
+          is_match: isMatch,
+          actual_mbti: actualMbtiToSend,
+        }),
+      });
+
+      const responseData = await response.json().catch(() => ({}));
+      
+      if (!response.ok) {
+        const errorMessage = responseData.detail || responseData.error || `응답 저장 실패 (${response.status})`;
+        console.error('응답 저장 실패:', errorMessage, responseData);
+        throw new Error(errorMessage);
+      }
+
+      if (responseData.success) {
+        // 저장 성공 - 상태 업데이트
+        console.log('응답 저장 성공:', responseData);
+        // 저장 성공 시 mbtiMatch를 설정하여 UI가 업데이트되도록 함
+        if (isMatch) {
+          setMbtiMatch(true);
+        } else {
+          // "다른 유형이에요"를 선택한 경우, 저장 성공 후 완료 상태로 변경
+          setMbtiMatch(true); // 완료 상태로 표시하기 위해 true로 설정
+        }
+      } else {
+        throw new Error(responseData.error || '응답 저장 실패');
+      }
+    } catch (error) {
+      console.error('응답 저장 오류:', error);
+      alert(error.message || '응답을 저장하는 중 오류가 발생했습니다.');
+      // 오류 발생 시 상태 롤백 (isMatch가 false일 때만)
+      if (!isMatch) {
+        setMbtiMatch(null);
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleActualMbtiSubmit = () => {
+    if (!actualMbti || actualMbti.trim().length !== 4) {
+      alert('MBTI 유형을 4자리로 입력해주세요 (예: INTJ, ENFP)');
+      return;
+    }
+
+    const mbtiUpper = actualMbti.trim().toUpperCase();
+    const validMbtiTypes = ['INTJ', 'INTP', 'ENTJ', 'ENTP', 'INFJ', 'INFP', 'ENFJ', 'ENFP',
+                           'ISTJ', 'ISFJ', 'ESTJ', 'ESFJ', 'ISTP', 'ISFP', 'ESTP', 'ESFP'];
+    
+    if (!validMbtiTypes.includes(mbtiUpper)) {
+      alert('올바른 MBTI 유형을 입력해주세요 (예: INTJ, ENFP)');
+      return;
+    }
+
+    saveResponse(false, mbtiUpper);
   };
 
   if (loading || !type || !typeData) {
@@ -226,17 +422,42 @@ function BookBTIResultContent() {
                     <div className="space-y-2">
                       <button
                         onClick={() => handleMbtiMatch(true)}
-                        className="w-full px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-lg text-white text-sm shadow-md hover:shadow-lg transition-all hover:scale-105"
+                        disabled={isSaving}
+                        className="w-full px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-lg text-white text-sm shadow-md hover:shadow-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         ✓ 맞아요
                       </button>
                       <button
                         onClick={() => handleMbtiMatch(false)}
-                        className="w-full px-4 py-2.5 bg-white hover:bg-gray-50 rounded-lg text-gray-700 text-sm border-2 border-gray-200 hover:border-gray-300 transition-all"
+                        disabled={isSaving}
+                        className="w-full px-4 py-2.5 bg-white hover:bg-gray-50 rounded-lg text-gray-700 text-sm border-2 border-gray-200 hover:border-gray-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         다른 유형이에요
                       </button>
                     </div>
+                  </div>
+                ) : mbtiMatch === false ? (
+                  <div className="transition-opacity duration-300 ease-in-out space-y-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <p className="text-xs text-gray-600">실제 MBTI를 알려주세요</p>
+                    </div>
+                    <input
+                      type="text"
+                      value={actualMbti}
+                      onChange={(e) => setActualMbti(e.target.value.toUpperCase())}
+                      placeholder="예: INTJ"
+                      maxLength={4}
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:border-purple-500 text-center font-semibold tracking-wider"
+                      disabled={isSaving}
+                    />
+                    <button
+                      onClick={handleActualMbtiSubmit}
+                      disabled={isSaving || !actualMbti || actualMbti.length !== 4}
+                      className="w-full px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-lg text-white text-sm shadow-md hover:shadow-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSaving ? '저장 중...' : '저장하기'}
+                    </button>
                   </div>
                 ) : (
                   <div className="text-center py-2 animate-[fadeIn_0.5s_ease-in-out]">
@@ -359,7 +580,6 @@ export default function BookBTIResult() {
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 flex items-center justify-center">
         <Header />
         <div className="text-center">
-          <div className="animate-spin w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full mx-auto mb-4"></div>
           <p className="text-gray-600">결과를 불러오는 중...</p>
         </div>
       </div>

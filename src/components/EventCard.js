@@ -161,6 +161,8 @@ export function EventCard({ event }) {
   const headline = event.description?.headline || event.title;
   const eventStatus = getEventStatus(event);
   
+  // 조회수 표시 제거 (백엔드 조회수 증가 기능은 유지)
+  
   return (
     <div className="group flex-shrink-0 w-72 cursor-pointer">
       <Link

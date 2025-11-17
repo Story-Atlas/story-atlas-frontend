@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { BookBTIAnswerCard } from '@/components/BookBTIAnswerCard';
@@ -32,10 +32,18 @@ function HeartIcon({ className }) {
   );
 }
 
-function LightbulbIcon({ className }) {
+function BoltIcon({ className }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m4.5 0a12.05 12.05 0 003.478-.397 3 3 0 003.478-3.478 12.05 12.05 0 00-.397-3.478m-6.122 0a12.05 12.05 0 00-.397 3.478 3 3 0 003.478 3.478 12.06 12.06 0 004.5 0m0 0a12.05 12.05 0 003.478-.397 3.001 3.001 0 001.576-1.576 12.05 12.05 0 00.397-3.478m-3.478 3.478a3 3 0 01-1.576 1.576 12.05 12.05 0 01-.397 3.478m0 0a12.06 12.06 0 01-4.5 0m4.5 0v-.001" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+    </svg>
+  );
+}
+
+function DocumentTextIcon({ className }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
     </svg>
   );
 }
@@ -57,10 +65,19 @@ function MapIcon({ className }) {
   );
 }
 
-function NavigationIcon({ className }) {
+function ArrowPathIcon({ className }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l8.735 12.545a.75.75 0 01.146.41v10.09a.75.75 0 00.995.72l4.907-1.581a.75.75 0 01.588 0l4.907 1.581a.75.75 0 00.995-.72v-10.09a.75.75 0 01.146-.41L21 3m-9 12l-9-12m9 12l9-12m-9 12v8.25" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+    </svg>
+  );
+}
+
+function EyeIcon({ className }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
   );
 }
@@ -105,7 +122,7 @@ const questions = [
       type: 'T',
       title: '두뇌를 위한 영감',
       description: '새로운 \'지식\'이나 \'아이디어\'를 탐구하며 지적인 \'자극\'을 느끼고 싶어요.',
-      icon: <LightbulbIcon className="w-8 h-8 text-blue-500" />,
+      icon: <BoltIcon className="w-8 h-8 text-blue-500" />,
     },
   },
   {
@@ -133,7 +150,7 @@ const questions = [
       type: 'P',
       title: '골목으로 헤매기',
       description: '지도는 참고만! 발길 가는 대로 우연히 발견하는 예상 밖의 장소가 더 좋아요.',
-      icon: <NavigationIcon className="w-8 h-8 text-rose-500" />,
+      icon: <ArrowPathIcon className="w-8 h-8 text-rose-500" />,
     },
     optionB: {
       type: 'J',
@@ -142,16 +159,99 @@ const questions = [
       icon: <CheckCircleIcon className="w-8 h-8 text-blue-500" />,
     },
   },
+  // 질문 5-8: 일상 행동 패턴 질문
+  {
+    id: 5,
+    axis: 'PJ',
+    question: "서점에 들어갔을 때 당신의 첫 행동은?",
+    optionA: {
+      type: 'P',
+      title: '감으로 골라보기',
+      description: '눈에 띄는 책부터 펼쳐보며 우연의 발견을 즐긴다.',
+      icon: <EyeIcon className="w-8 h-8 text-rose-500" />,
+    },
+    optionB: {
+      type: 'J',
+      title: '체계적으로 탐색하기',
+      description: '장르별, 주제별로 분류된 책장을 순서대로 둘러본다.',
+      icon: <CheckCircleIcon className="w-8 h-8 text-blue-500" />,
+    },
+  },
+  {
+    id: 6,
+    axis: 'EI',
+    question: "이상적인 주말 계획은?",
+    optionA: {
+      type: 'I',
+      title: '계획된 활동',
+      description: '미리 정한 일정대로 조용한 카페나 도서관에서 시간을 보낸다.',
+      icon: <BookOpenIcon className="w-8 h-8 text-rose-500" />,
+    },
+    optionB: {
+      type: 'E',
+      title: '즉흥적인 모험',
+      description: '친구들과 만나서 그때그때 결정하며 새로운 장소를 탐험한다.',
+      icon: <UsersIcon className="w-8 h-8 text-blue-500" />,
+    },
+  },
+  {
+    id: 7,
+    axis: 'FT',
+    question: "책을 선택할 때 가장 중요하게 생각하는 것은?",
+    optionA: {
+      type: 'F',
+      title: '감성적 공감',
+      description: '이야기의 감정과 주인공의 내적 갈등에 깊이 공감할 수 있는가.',
+      icon: <HeartIcon className="w-8 h-8 text-rose-500" />,
+    },
+    optionB: {
+      type: 'T',
+      title: '논리적 설득',
+      description: '명확한 논리와 근거, 실용적인 지식이나 아이디어를 얻을 수 있는가.',
+      icon: <DocumentTextIcon className="w-8 h-8 text-blue-500" />,
+    },
+  },
+  {
+    id: 8,
+    axis: 'NS',
+    question: "문화 공간에서 시간을 보내는 방식은?",
+    optionA: {
+      type: 'N',
+      title: '깊이 있는 집중',
+      description: '한 곳에 오래 머물며 작품이나 공간의 세부를 깊이 탐구한다.',
+      icon: <SparklesIcon className="w-8 h-8 text-rose-500" />,
+    },
+    optionB: {
+      type: 'S',
+      title: '다양한 경험 탐색',
+      description: '여러 공간을 빠르게 둘러보며 전체적인 분위기와 특징을 파악한다.',
+      icon: <MapIcon className="w-8 h-8 text-blue-500" />,
+    },
+  },
 ];
+
+// Fisher-Yates 셔플 알고리즘
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
 
 export default function BookBTIQuiz() {
   const router = useRouter();
+  
+  // 질문을 컴포넌트 마운트 시 한 번만 랜덤으로 섞기
+  const shuffledQuestions = useMemo(() => shuffleArray(questions), []);
+  
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState([]); // 배열로 변경: ['A', 'B', 'A', ...]
   const [selectedAnswer, setSelectedAnswer] = useState(null);
 
-  const question = questions[currentQuestion];
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
+  const question = shuffledQuestions[currentQuestion];
+  const progress = ((currentQuestion + 1) / shuffledQuestions.length) * 100;
 
   const handleAnswer = (option) => {
     setSelectedAnswer(option);
@@ -160,25 +260,38 @@ export default function BookBTIQuiz() {
   const handleNext = () => {
     if (!selectedAnswer) return;
 
-    const answerType = selectedAnswer === 'A' ? question.optionA.type : question.optionB.type;
-    const newAnswers = { ...answers, [question.axis]: answerType };
-    setAnswers(newAnswers);
+    // 답변을 배열에 추가 (섞인 질문 순서대로)
+    const newAnswers = [...answers, selectedAnswer];
 
-    if (currentQuestion < questions.length - 1) {
+    if (currentQuestion < shuffledQuestions.length - 1) {
+      // 아직 마지막 질문이 아님
+      setAnswers(newAnswers);
       setCurrentQuestion(currentQuestion + 1);
       setSelectedAnswer(null);
     } else {
-      // Calculate Book-BTI type: E/I + N/S + F/T + P/J
-      const btiCode = `${newAnswers.EI}${newAnswers.NS}${newAnswers.FT}${newAnswers.PJ}`;
-      router.push(`/book-bti/loading?type=${btiCode}`);
+      // 마지막 질문: 8개 답변 완료 (이미 newAnswers에 마지막 답변이 포함됨)
+      // 답변을 원래 질문 ID 순서로 정렬 (백엔드가 질문을 ID 순서로 가져오므로)
+      const answersByQuestionId = new Array(8).fill(null);
+      shuffledQuestions.forEach((question, index) => {
+        answersByQuestionId[question.id - 1] = newAnswers[index];
+      });
+      
+      // sessionStorage에 답변 저장 (URL 길이 제한 회피)
+      const storageKey = `bookbti_answers_${Date.now()}`;
+      sessionStorage.setItem(storageKey, JSON.stringify(answersByQuestionId));
+      sessionStorage.setItem('bookbti_current_answers_key', storageKey);
+      router.push(`/book-bti/loading?key=${storageKey}`);
     }
   };
 
   const handleBack = () => {
     if (currentQuestion > 0) {
+      const newAnswers = answers.slice(0, -1); // 마지막 답변 제거
+      setAnswers(newAnswers);
       setCurrentQuestion(currentQuestion - 1);
-      const prevQuestion = questions[currentQuestion - 1];
-      setSelectedAnswer(answers[prevQuestion.axis] === prevQuestion.optionA.type ? 'A' : 'B');
+      // 이전 질문의 답변 복원
+      const prevAnswer = newAnswers[newAnswers.length - 1];
+      setSelectedAnswer(prevAnswer || null);
     } else {
       router.push('/book-bti');
     }
@@ -200,7 +313,7 @@ export default function BookBTIQuiz() {
             </svg>
           </button>
           <span className="text-gray-600 font-medium">
-            {currentQuestion + 1} / {questions.length}
+            {currentQuestion + 1} / {shuffledQuestions.length}
           </span>
         </div>
         <Progress value={progress} className="h-2" />
@@ -239,9 +352,9 @@ export default function BookBTIQuiz() {
             <div className="max-w-md mx-auto">
               <Button
                 onClick={handleNext}
-                className="w-full py-6 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="w-full py-6 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white text-lg shadow-lg hover:shadow-xl transition-all duration-300"
               >
-                {currentQuestion < questions.length - 1 ? '다음' : '결과 보기'}
+                {currentQuestion < shuffledQuestions.length - 1 ? '다음' : '결과 보기'}
               </Button>
             </div>
           )}

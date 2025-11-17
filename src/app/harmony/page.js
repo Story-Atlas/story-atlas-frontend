@@ -39,7 +39,54 @@ function BookOpenIcon({ className }) {
   );
 }
 
-function BookmarkCard({ bookmark, onClick }) {
+function BookmarkCard({ bookmark, onClick, onLike }) {
+  const [isLiked, setIsLiked] = useState(false);
+
+  useEffect(() => {
+    // localStorage에서 좋아요 여부 확인
+    const likedBookmarks = JSON.parse(localStorage.getItem('likedBookmarks') || '[]');
+    setIsLiked(likedBookmarks.includes(bookmark.id));
+  }, [bookmark.id]);
+
+  const handleLike = async (e) => {
+    e.stopPropagation(); // 카드 클릭 이벤트 방지
+    
+    try {
+      const endpoint = isLiked 
+        ? `/api/bookmark/${bookmark.id}/like/decrement`
+        : `/api/bookmark/${bookmark.id}/like/increment`;
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // localStorage 업데이트
+        const likedBookmarks = JSON.parse(localStorage.getItem('likedBookmarks') || '[]');
+        
+        if (isLiked) {
+          // 좋아요 취소
+          const index = likedBookmarks.indexOf(bookmark.id);
+          if (index > -1) {
+            likedBookmarks.splice(index, 1);
+          }
+          setIsLiked(false);
+        } else {
+          // 좋아요 추가
+          likedBookmarks.push(bookmark.id);
+          setIsLiked(true);
+        }
+        
+        localStorage.setItem('likedBookmarks', JSON.stringify(likedBookmarks));
+        onLike(bookmark.id, data.likes); // 부모 컴포넌트에 알림
+      }
+    } catch (error) {
+      console.error('좋아요 실패:', error);
+    }
+  };
+
   return (
     <div
       onClick={onClick}
@@ -78,22 +125,29 @@ function BookmarkCard({ bookmark, onClick }) {
               "{bookmark.quote}"
             </p>
           )}
+          
+          {/* 좋아요 버튼 - 이미지 위 오른쪽 하단 */}
+          <button 
+            onClick={handleLike}
+            className={`absolute bottom-2 right-2 z-20 flex items-center gap-1 px-3 py-1.5 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 ${
+              isLiked 
+                ? 'bg-red-500 text-white' 
+                : 'bg-white text-gray-600 hover:bg-red-50 hover:text-red-500'
+            }`}
+          >
+            <HeartIcon className="w-5 h-5" />
+            <span className="font-semibold text-sm">{bookmark.likes || 0}</span>
+          </button>
         </div>
       </div>
 
       {/* User Info */}
       <div className="p-4 space-y-3 flex-1">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-[hsl(var(--accent-brown))]/20 flex items-center justify-center">
-              <UserIcon className="w-4 h-4 text-[hsl(var(--accent-brown))]" />
-            </div>
-            <span className="text-gray-700">{bookmark.author || '익명'}</span>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-[hsl(var(--accent-brown))]/20 flex items-center justify-center">
+            <UserIcon className="w-4 h-4 text-[hsl(var(--accent-brown))]" />
           </div>
-          <button className="flex items-center gap-1 text-gray-500 hover:text-red-500 transition-colors">
-            <HeartIcon className="w-4 h-4" />
-            <span>{bookmark.likes || 0}</span>
-          </button>
+          <span className="text-gray-700">익명</span>
         </div>
         <div className="flex items-center gap-2 text-gray-500">
           <BookOpenIcon className="w-4 h-4" />
@@ -158,7 +212,7 @@ function BookmarkDetailDialog({ bookmark, open, onClose }) {
             <div className="space-y-2 w-full">
               <div className="flex items-center gap-2">
                 <UserIcon className="w-4 h-4 text-gray-500" />
-                <span className="text-gray-700">작성자: {bookmark.author || '익명'}</span>
+                <span className="text-gray-700">작성자: 익명</span>
               </div>
               <div className="flex items-center gap-2">
                 <HeartIcon className="w-4 h-4 text-gray-500" />
@@ -172,13 +226,6 @@ function BookmarkDetailDialog({ bookmark, open, onClose }) {
           <div className="space-y-4">
             <h3 className="font-pretendard-bold">책 정보</h3>
             <div className="space-y-4">
-              {bookmark.bookCover && (
-                <img
-                  src={bookmark.bookCover}
-                  alt={bookmark.bookTitle}
-                  className="w-full h-64 object-cover rounded-lg"
-                />
-              )}
               <div>
                 <h4 className="font-pretendard-bold mb-1 text-xl">{bookmark.bookTitle || '책 제목 없음'}</h4>
                 {bookmark.bookAuthor && (
@@ -188,10 +235,20 @@ function BookmarkDetailDialog({ bookmark, open, onClose }) {
                   <Badge variant="outline">{bookmark.bookGenre}</Badge>
                 )}
               </div>
+              
+              {/* AI 생성 책 요약 */}
               {bookmark.bookDescription && (
-                <p className="text-gray-700 leading-relaxed">
-                  {bookmark.bookDescription}
-                </p>
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 border-l-4 border-[hsl(var(--accent-brown))]">
+                  <div className="flex items-start gap-2 mb-3">
+                    <svg className="w-5 h-5 text-[hsl(var(--accent-brown))] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    <span className="text-sm font-semibold text-[hsl(var(--accent-brown))]">AI 책 요약</span>
+                  </div>
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                    {bookmark.bookDescription}
+                  </p>
+                </div>
               )}
             </div>
           </div>
@@ -209,18 +266,39 @@ export default function HarmonyPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: 백엔드 API에서 책갈피 목록 가져오기
-    // 현재는 빈 배열로 시작
+    // 백엔드 API에서 책갈피 목록 가져오기
     const fetchBookmarks = async () => {
       try {
-        const API_BASE = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '/api';
-        // TODO: 백엔드에 /api/bookmarks 엔드포인트가 추가되면 사용
-        // const res = await fetch(`${API_BASE}/api/bookmarks`);
-        // const data = await res.json();
-        // setBookmarks(data);
+        const response = await fetch('/api/bookmark/list');
+        const data = await response.json();
         
-        // 임시로 빈 배열 설정
-        setBookmarks([]);
+        if (data.success && data.bookmarks) {
+          // 백엔드 데이터를 프론트엔드 형식으로 변환
+          const formattedBookmarks = data.bookmarks.map(bookmark => ({
+            id: bookmark.id,
+            quote: bookmark.quote,
+            bookTitle: bookmark.book_title,
+            author: '익명', // 항상 익명으로 고정
+            bookAuthor: bookmark.author, // 책의 작가명
+            bookGenre: bookmark.book_genre,
+            imageUrl: bookmark.image_url,
+            font: bookmark.font,
+            mood: bookmark.mood,
+            color: bookmark.color_scheme,
+            likes: bookmark.likes || 0,
+            createdAt: new Date(bookmark.created_at).toLocaleDateString('ko-KR'),
+            // 네이버 책 정보
+            bookCover: bookmark.book_image,
+            bookPublisher: bookmark.book_publisher,
+            bookPubdate: bookmark.book_pubdate,
+            bookIsbn: bookmark.book_isbn,
+            bookDescription: bookmark.book_description,
+            bookLink: bookmark.book_link,
+          }));
+          setBookmarks(formattedBookmarks);
+        } else {
+          setBookmarks([]);
+        }
       } catch (error) {
         console.error('Failed to fetch bookmarks:', error);
         setBookmarks([]);
@@ -235,6 +313,22 @@ export default function HarmonyPage() {
   const handleBookmarkClick = (bookmark) => {
     setSelectedBookmark(bookmark);
     setDialogOpen(true);
+  };
+
+  const handleLike = (bookmarkId, newLikes) => {
+    // 좋아요 수 업데이트
+    setBookmarks(prevBookmarks =>
+      prevBookmarks.map(bookmark =>
+        bookmark.id === bookmarkId
+          ? { ...bookmark, likes: newLikes }
+          : bookmark
+      )
+    );
+    
+    // 선택된 책갈피도 업데이트
+    if (selectedBookmark && selectedBookmark.id === bookmarkId) {
+      setSelectedBookmark(prev => ({ ...prev, likes: newLikes }));
+    }
   };
 
   const filteredBookmarks = bookmarks.filter((bookmark) =>
@@ -292,6 +386,7 @@ export default function HarmonyPage() {
                   key={bookmark.id}
                   bookmark={bookmark}
                   onClick={() => handleBookmarkClick(bookmark)}
+                  onLike={handleLike}
                 />
               ))}
             </div>

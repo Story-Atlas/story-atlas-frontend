@@ -1,6 +1,7 @@
 // src/app/events/[id]/page.js
 
 import { Header } from '@/components/Header';
+// import { ViewCounter } from '@/components/ViewCounter';
 
 async function getEventData(id) {
   // 서버 컴포넌트에서는 절대 URL 필요

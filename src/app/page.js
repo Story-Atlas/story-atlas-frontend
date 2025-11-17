@@ -3,6 +3,7 @@
 import { Header } from '@/components/Header';
 import { HeroSection } from '@/components/HeroSection';
 import { CategoryCarousel } from '@/components/CategoryCarousel';
+import { BookBTIPromotion } from '@/components/BookBTIPromotion';
 
 // 1. 백엔드 API 주소
 // 서버 컴포넌트에서는 절대 URL 필요 (서버 내부 통신이므로 localhost 사용)
@@ -48,13 +49,14 @@ const categoriesConfig = [
     type: 'places',
     link: 'https://naver.me/xjUC3m51'
   },
-  {   
-    title: '주변 관광지', 
-    slug: 'tourist-spots',
-    description: '커피 배 채웠으면, 이제 감성 배 채울 시간',
-    type: 'places',
-    data: [] // 데이터 없음
-  },
+  // 주변 관광지는 spots로 대체되었으므로 제거
+  // {   
+  //   title: '주변 관광지', 
+  //   slug: 'tourist-spots',
+  //   description: '커피 배 채웠으면, 이제 감성 배 채울 시간',
+  //   type: 'places',
+  //   data: [] // 데이터 없음
+  // },
   { 
     title: '관광지', 
     slug: 'spots', 
@@ -251,6 +253,9 @@ export default async function HomePage() {
     <div className="min-h-screen bg-[hsl(var(--warm-bg))]">
       <Header />
       <HeroSection />
+      
+      {/* 북BTI 유도 섹션 */}
+      <BookBTIPromotion />
       
       {/* 메인 콘텐츠 */}
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">

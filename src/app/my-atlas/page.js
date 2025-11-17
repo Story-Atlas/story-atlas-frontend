@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { getGuestUserId } from '@/utils/guestUser';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -27,6 +29,91 @@ function BookmarkIcon({ className }) {
   );
 }
 
+// 책갈피 상세 다이얼로그 컴포넌트
+function BookmarkDetailDialog({ bookmark, open, onClose }) {
+  if (!bookmark) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>책갈피 상세</DialogTitle>
+        </DialogHeader>
+        <DialogClose onClose={onClose} />
+
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* 책갈피 이미지 */}
+          <div className="space-y-4 flex flex-col items-center">
+            <h3 className="font-pretendard-bold self-start">책갈피</h3>
+            <p className="text-gray-500 self-start text-sm">
+              표준 크기: 50mm × 150mm (1:3 비율)
+            </p>
+            <div className="relative w-full max-w-xs" style={{ aspectRatio: '1 / 3' }}>
+              {bookmark.image_url ? (
+                <Image
+                  src={bookmark.image_url}
+                  alt={bookmark.quote || bookmark.book_title}
+                  fill
+                  className="object-cover rounded-xl shadow-lg"
+                  unoptimized
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center">
+                  <p className="text-gray-400">이미지 없음</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 책 정보 */}
+          <div className="space-y-4">
+            <h3 className="font-pretendard-bold">책 정보</h3>
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-pretendard-bold mb-1 text-xl">{bookmark.book_title || '책 제목 없음'}</h4>
+                {bookmark.author && (
+                  <p className="text-gray-600 mb-2">작가: {bookmark.author}</p>
+                )}
+                {bookmark.book_genre && (
+                  <Badge variant="outline">{bookmark.book_genre}</Badge>
+                )}
+              </div>
+              
+              {/* 기억에 남는 구절 */}
+              {bookmark.quote && (
+                <div className="bg-amber-50 rounded-xl p-4 border-l-4 border-amber-500">
+                  <p className="text-sm font-semibold text-amber-800 mb-2">기억에 남는 구절</p>
+                  <p className="text-gray-700 italic leading-relaxed">"{bookmark.quote}"</p>
+                </div>
+              )}
+              
+              {/* AI 생성 책 요약 */}
+              {bookmark.book_description && (
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 border-l-4 border-[hsl(var(--accent-brown))]">
+                  <div className="flex items-start gap-2 mb-3">
+                    <svg className="w-5 h-5 text-[hsl(var(--accent-brown))] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    <span className="text-sm font-semibold text-[hsl(var(--accent-brown))]">AI 책 요약</span>
+                  </div>
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                    {bookmark.book_description}
+                  </p>
+                </div>
+              )}
+              
+              {/* 생성일 */}
+              <p className="text-sm text-gray-500">
+                생성일: {new Date(bookmark.created_at).toLocaleDateString('ko-KR')}
+              </p>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function MyAtlasPage() {
   const [guestUserId, setGuestUserId] = useState(null);
   const [bookmarks, setBookmarks] = useState([]);
@@ -34,10 +121,13 @@ export default function MyAtlasPage() {
   const [favoritePlaces, setFavoritePlaces] = useState([]);
   const [summary, setSummary] = useState({ bookmark_count: 0, favorite_event_count: 0, favorite_place_count: 0 });
   const [loading, setLoading] = useState(true);
+  const [selectedBookmark, setSelectedBookmark] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     // 익명 사용자 ID 가져오기
     const userId = getGuestUserId();
+    console.log('🔑 My Atlas - Guest User ID:', userId);
     setGuestUserId(userId);
 
     if (userId) {
@@ -82,6 +172,8 @@ export default function MyAtlasPage() {
         if (bookmarksRes.status === 'fulfilled' && bookmarksRes.value.ok) {
           try {
             const bookmarksData = await bookmarksRes.value.json();
+            console.log('📚 책갈피 데이터:', bookmarksData);
+            console.log('📚 책갈피 개수:', bookmarksData.bookmarks?.length || 0);
             setBookmarks(bookmarksData.bookmarks || []);
           } catch (e) {
             console.error('책갈피 데이터 파싱 실패:', e);
@@ -225,28 +317,60 @@ export default function MyAtlasPage() {
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {bookmarks.map((bookmark) => (
-                  <div key={bookmark.id} className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow">
-                    <div className="relative aspect-[1/3] bg-gray-100">
-                      <Image
-                        src={bookmark.image_url.startsWith('http') ? bookmark.image_url : bookmark.image_url}
-                        alt={bookmark.book_title}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                      />
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {bookmarks.map((bookmark) => (
+                    <div 
+                      key={bookmark.id} 
+                      className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                      onClick={() => {
+                        setSelectedBookmark(bookmark);
+                        setDialogOpen(true);
+                      }}
+                    >
+                      {/* 책갈피 이미지만 표시 */}
+                      <div className="relative aspect-[1/1.75] bg-gradient-to-br from-gray-50 to-gray-100">
+                        {bookmark.image_url ? (
+                          <Image
+                            src={bookmark.image_url.startsWith('http') 
+                              ? bookmark.image_url 
+                              : bookmark.image_url}
+                            alt={bookmark.book_title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400">
+                            <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* 간단한 정보만 표시 */}
+                      <div className="p-3 space-y-1">
+                        <h3 className="font-semibold text-sm text-gray-800 line-clamp-1">{bookmark.book_title}</h3>
+                        {bookmark.author && (
+                          <p className="text-xs text-gray-500 line-clamp-1">{bookmark.author}</p>
+                        )}
+                        <p className="text-xs text-gray-400 pt-1">
+                          {new Date(bookmark.created_at).toLocaleDateString('ko-KR')}
+                        </p>
+                      </div>
                     </div>
-                    <div className="p-4">
-                      <h3 className="font-bold text-gray-800 mb-1 line-clamp-1">{bookmark.book_title}</h3>
-                      {bookmark.author && (
-                        <p className="text-sm text-gray-600 mb-2">{bookmark.author}</p>
-                      )}
-                      <p className="text-xs text-gray-500 line-clamp-2">{bookmark.quote}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+                
+                {/* 책갈피 상세 다이얼로그 */}
+                <BookmarkDetailDialog
+                  bookmark={selectedBookmark}
+                  open={dialogOpen}
+                  onClose={() => setDialogOpen(false)}
+                />
+              </>
             )}
           </div>
 

@@ -4,6 +4,11 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Header } from '@/components/Header';
 
+// API Base URL (Next.js rewrites를 통해 Express 서버로 프록시됨)
+const API_BASE = typeof window === 'undefined'
+  ? (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api')
+  : (process.env.NEXT_PUBLIC_API_URL || '/api');
+
 function BookOpenIcon({ className }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
@@ -23,8 +28,9 @@ function SparklesIcon({ className }) {
 function BookBTILoadingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const type = searchParams.get('type') || 'INFP';
+  const storageKey = searchParams.get('key');
   const [showText, setShowText] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     // 텍스트를 0.3초 후에 표시
@@ -32,16 +38,87 @@ function BookBTILoadingContent() {
       setShowText(true);
     }, 300);
 
-    // 3초 후 결과 페이지로 이동
-    const redirectTimer = setTimeout(() => {
-      router.push(`/book-bti/result?type=${type}`);
-    }, 3000);
+    // AI 분석 API 호출
+    const analyzeAnswers = async () => {
+      if (!storageKey) {
+        setError('답변이 없습니다');
+        return;
+      }
+
+      // 최소 로딩 시간 보장 (AI가 분석하는 것처럼 보이도록 3초)
+      const MIN_LOADING_TIME = 3000;
+      const startTime = Date.now();
+
+      try {
+        // sessionStorage에서 답변 가져오기
+        const answersJson = sessionStorage.getItem(storageKey);
+        if (!answersJson) {
+          setError('답변 데이터를 찾을 수 없습니다');
+          return;
+        }
+
+        const answers = JSON.parse(answersJson);
+        
+        console.log('받은 답변:', answers);
+        console.log('답변 개수:', answers.length);
+        
+        if (!Array.isArray(answers) || answers.length !== 8) {
+          console.error(`답변 개수 오류: ${answers.length}개 (예상: 8개)`);
+          setError(`답변이 올바르지 않습니다 (${answers.length}개 받음, 8개 필요)`);
+          return;
+        }
+
+        // API 호출
+        const response = await fetch(`${API_BASE}/v1/analyze`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ answers }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.detail || errorData.error || `서버 오류 (${response.status})`);
+        }
+
+        const data = await response.json();
+        
+        if (data.success) {
+          // 분석 결과를 sessionStorage에 저장 (URL 길이 제한 회피)
+          const resultKey = `bookbti_result_${Date.now()}`;
+          sessionStorage.setItem(resultKey, JSON.stringify(data.data));
+          sessionStorage.setItem('bookbti_current_result_key', resultKey);
+          // 이전 답변 데이터 정리
+          sessionStorage.removeItem(storageKey);
+          
+          // 최소 로딩 시간이 지났는지 확인
+          const elapsedTime = Date.now() - startTime;
+          const remainingTime = Math.max(0, MIN_LOADING_TIME - elapsedTime);
+          
+          // 남은 시간이 있으면 대기 후 이동, 없으면 즉시 이동
+          setTimeout(() => {
+            router.push(`/book-bti/result?key=${resultKey}`);
+          }, remainingTime);
+        } else {
+          throw new Error(data.error || '분석 실패');
+        }
+      } catch (err) {
+        console.error('AI 분석 오류:', err);
+        setError(err.message || '분석 중 오류가 발생했습니다');
+        // 오류 발생 시 5초 후 홈으로 이동
+        setTimeout(() => {
+          router.push('/book-bti');
+        }, 5000);
+      }
+    };
+
+    analyzeAnswers();
 
     return () => {
       clearTimeout(textTimer);
-      clearTimeout(redirectTimer);
     };
-  }, [router, type]);
+  }, [router, storageKey]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
@@ -65,10 +142,10 @@ function BookBTILoadingContent() {
           {/* Loading Text */}
           <div className={`transition-opacity duration-500 ${showText ? 'opacity-100' : 'opacity-0'}`}>
             <h2 className="text-2xl md:text-3xl mb-4 text-gray-800 font-bold">
-              당신의 취향을 분석하고 있어요...
+              {error ? '오류가 발생했습니다' : 'AI가 당신의 답변을 분석하고 있어요...'}
             </h2>
             <p className="text-lg text-gray-600">
-              완벽한 장소를 찾는 중입니다
+              {error ? error : '완벽한 장소를 찾는 중입니다'}
             </p>
           </div>
 
