@@ -39,3 +39,7 @@ export function NaverMapLink({ type, id, url, address, children }) {
 }
 
 
+
+
+
+

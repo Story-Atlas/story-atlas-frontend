@@ -62,9 +62,21 @@ function normalizeSpot(spot) {
   const relativeUrl = getSpotImageUrl(spot.name);
   const imageUrl = `${baseUrl}${relativeUrl}`;
   
+  // description이 JSON 문자열이면 파싱
+  let parsedDescription = spot.description;
+  if (typeof spot.description === 'string' && spot.description.trim() !== '') {
+    try {
+      parsedDescription = JSON.parse(spot.description);
+    } catch (e) {
+      // JSON 파싱 실패 시 원본 유지
+      parsedDescription = spot.description;
+    }
+  }
+  
   return {
     ...spot,
-    image_url: imageUrl
+    image_url: imageUrl,
+    description: parsedDescription
   };
 }
 
@@ -198,10 +210,18 @@ function BookBTIResultContent() {
         
         // 추천 장소 설정
         // spots를 Express 서버처럼 정규화
-        const processedSpots = (analysisData.recommendations.spots || []).map(normalizeSpot);
+        const rawSpots = analysisData.recommendations?.spots || [];
+        const processedSpots = rawSpots.map(normalizeSpot);
+        
+        console.log('북BTI 분석 결과 - spots:', {
+          rawCount: rawSpots.length,
+          processedCount: processedSpots.length,
+          rawSpots: rawSpots,
+          processedSpots: processedSpots
+        });
         
         setRecommendations({
-          places: analysisData.recommendations.places || [],
+          places: analysisData.recommendations?.places || [],
           spots: processedSpots,
         });
         

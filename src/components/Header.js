@@ -27,20 +27,20 @@ export function Header({ sticky = true }) {
   return (
     <header className={`${sticky ? 'sticky top-0' : ''} z-50 w-full border-b bg-white/80 backdrop-blur-md`}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-3 h-16 items-center">
+        <div className="flex md:grid md:grid-cols-3 h-16 items-center justify-between md:justify-normal">
           {/* Logo - 왼쪽 */}
           <div className="flex justify-start">
             <Link href="/" className="flex items-center gap-2">
               <BookOpenIcon className="h-6 w-6 text-[hsl(var(--accent-brown))]" />
-              <span className="font-pretendard font-extrabold text-xl">Story Atlas</span>
+              <span className="font-pretendard font-extrabold text-xl hidden md:block">Story Atlas</span>
             </Link>
           </div>
 
           {/* Navigation - 중앙 정렬 (3개만) */}
-          <nav className="hidden md:flex items-center justify-center gap-2">
+          <nav className="flex items-center justify-center gap-1 md:gap-2">
             <Link 
               href="/" 
-              className={`font-bold transition-all px-4 py-2 rounded-full ${
+              className={`font-bold transition-all px-3 py-1.5 md:px-4 md:py-2 rounded-full text-sm md:text-base ${
                 pathname === '/' 
                   ? 'text-[hsl(var(--accent-brown))] bg-[hsl(var(--accent-brown))]/10' 
                   : 'text-gray-700 hover:text-[hsl(var(--accent-brown))] hover:bg-gray-100'
@@ -50,7 +50,7 @@ export function Header({ sticky = true }) {
             </Link>
             <Link 
               href="/events" 
-              className={`font-bold transition-all px-4 py-2 rounded-full ${
+              className={`font-bold transition-all px-3 py-1.5 md:px-4 md:py-2 rounded-full text-sm md:text-base ${
                 pathname === '/events' || pathname?.startsWith('/events/')
                   ? 'text-[hsl(var(--accent-brown))] bg-[hsl(var(--accent-brown))]/10' 
                   : 'text-gray-700 hover:text-[hsl(var(--accent-brown))] hover:bg-gray-100'
@@ -60,7 +60,7 @@ export function Header({ sticky = true }) {
             </Link>
             <Link 
               href="/book-bti" 
-              className={`font-bold transition-all px-4 py-2 rounded-full ${
+              className={`font-bold transition-all px-3 py-1.5 md:px-4 md:py-2 rounded-full text-sm md:text-base ${
                 pathname === '/book-bti' || pathname?.startsWith('/book-bti/')
                   ? 'text-[hsl(var(--accent-brown))] bg-[hsl(var(--accent-brown))]/10' 
                   : 'text-gray-700 hover:text-[hsl(var(--accent-brown))] hover:bg-gray-100'

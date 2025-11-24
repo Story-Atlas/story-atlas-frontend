@@ -22,7 +22,7 @@ export default async function Image() {
           alignItems: 'center',
           justifyContent: 'center',
           color: 'white',
-          fontFamily: 'system-ui',
+          fontFamily: 'Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard Variable", Roboto, "Noto Sans KR", "Segoe UI", "Malgun Gothic", sans-serif',
         }}
       >
         <div style={{ fontSize: 80, fontWeight: 'bold', marginBottom: 20 }}>
@@ -38,6 +38,10 @@ export default async function Image() {
     }
   );
 }
+
+
+
+
 
 
 

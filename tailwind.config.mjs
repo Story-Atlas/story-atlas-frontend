@@ -14,8 +14,8 @@ const config = {
       // 3. (선택 사항) layout.js에서 로드한 폰트를 Tailwind 클래스로 등록합니다.
       //    이제 globals.css의 .font-title 대신 'font-title' 클래스를 쓸 수 있습니다.
       fontFamily: {
-        title: ['var(--font-br-firma)'],
-        sans: ['var(--font-nanum-square)'], // 'font-sans'는 기본 폰트가 됩니다.
+        title: ['var(--font-pretendard)'],
+        sans: ['var(--font-pretendard)'], // 'font-sans'는 기본 폰트가 됩니다.
       },
     },
   },

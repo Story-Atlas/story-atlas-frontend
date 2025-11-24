@@ -155,6 +155,7 @@ export function SpotCard({ spot }) {
 
     setIsRecommending(true);
     try {
+      const apiBase = typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_API_URL || '/api') : '/api';
       const res = await fetch(`${apiBase}/place-recommendation/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -20,7 +20,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-pretendard);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -84,6 +84,18 @@ select option {
   font-weight: 500;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* 👇 [추가] input, textarea, button 요소 스타일 */
+input, textarea, button {
+  font-family: var(--font-pretendard), -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard Variable", Pretendard, Roboto, "Noto Sans KR", "Segoe UI", "Malgun Gothic", sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 👇 [추가] a, span, div 등 모든 텍스트 요소에 폰트 상속 */
+a, span, div, label, li, td, th {
+  font-family: inherit;
 }
 
 /* 👇 [추가] 필기체 폰트 클래스 (Dancing Script) */
