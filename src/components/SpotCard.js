@@ -32,6 +32,9 @@ function ArrowUpIcon({ className }) {
 
 // 백엔드에서 제공하는 image_url 사용, 없으면 기본값 반환
 function getSpotImageUrl(spot) {
+  if (spot.main_photo_url) {
+    return spot.main_photo_url;
+  }
   if (spot.image_url) {
     return spot.image_url;
   }
@@ -66,7 +69,7 @@ export function SpotCard({ spot }) {
           }
         })
         .catch(err => console.error('찜 상태 확인 실패:', err));
-      
+
       // 공개 추천 상태 확인 (오늘 추천 가능 여부만 확인, 카운트는 spots 테이블에서 가져옴)
       fetch(`${apiBase}/place-recommendation/check?guest_user_id=${guestUserId}&place_id=${spot.id}&place_type=spot`)
         .then(async (res) => {
@@ -83,7 +86,7 @@ export function SpotCard({ spot }) {
         })
         .catch(err => console.error('공개 추천 상태 확인 실패:', err));
     }
-    
+
     // spots 테이블의 recommendation_count가 있으면 사용 (이미 초기값으로 설정됨)
     if (spot.recommendation_count !== undefined) {
       setRecommendationCount(spot.recommendation_count || 0);
@@ -94,7 +97,7 @@ export function SpotCard({ spot }) {
   async function handleFavoriteToggle(e) {
     e.preventDefault();
     e.stopPropagation();
-    
+
     const guestUserId = getGuestUserId();
     if (!guestUserId) {
       alert('익명 사용자 ID를 가져올 수 없습니다.');
@@ -141,12 +144,12 @@ export function SpotCard({ spot }) {
   async function handleRecommendation(e) {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (!canRecommend) {
       alert('오늘 이미 추천하셨습니다. 하루에 한 번만 추천할 수 있습니다.');
       return;
     }
-    
+
     const guestUserId = getGuestUserId();
     if (!guestUserId) {
       alert('익명 사용자 ID를 가져올 수 없습니다.');
@@ -196,7 +199,7 @@ export function SpotCard({ spot }) {
 
   const imageUrl = getSpotImageUrl(spot);
   const headline = spot.description?.headline || spot.name;
-  
+
   return (
     <div className="group flex-shrink-0 w-72 cursor-pointer">
       <Link
@@ -241,7 +244,7 @@ export function SpotCard({ spot }) {
             <HeartIcon className={`w-5 h-5 ${isFavorited ? 'text-rose-500' : 'text-gray-400'}`} filled={isFavorited} />
           </button>
         </div>
-        
+
         {/* Content */}
         <div className="p-5">
           <div className="flex items-start gap-2 mb-2">
