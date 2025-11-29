@@ -1,181 +1,132 @@
 # Story Atlas Frontend
 
-Next.js 기반 독서 문화 공간 큐레이션 플랫폼 프론트엔드
+> Story Atlas 서비스의 사용자 인터페이스입니다. 파주 출판단지 일대의 독서 문화 공간을 탐험하는 웹 애플리케이션입니다.
+
+**🌐 Live Demo**: [https://story-atlas-frontend.vercel.app/](https://story-atlas-frontend.vercel.app/)
+
+## 프로젝트 소개
+
+**Story Atlas**는 파주 출판단지 일대의 문학적 명소와 장소를 탐험할 수 있는 웹 서비스입니다. 이 frontend 폴더는 사용자가 직접 상호작용하는 웹 애플리케이션을 담고 있으며, Vercel을 통해 배포되어 운영 중입니다.
+
+프론트엔드는 Next.js 14 App Router 기반으로 구축되어 있으며, 백엔드 API와 통신하여 데이터를 표시하고 사용자 경험을 제공합니다.
+
+## 핵심 기능
+
+### 장소 탐색
+파주 출판단지 일대의 다양한 독서 문화 공간을 탐색할 수 있습니다:
+- **북카페**: 책과 함께하는 카페 공간
+- **브런치 카페**: 독서와 식사를 함께 즐길 수 있는 장소
+- **야외 공간**: 자연 속에서 책을 읽을 수 있는 공간
+- **서점**: 출판단지의 특색 있는 서점들
+
+### 문화 행사
+파주 출판단지에서 진행되는 다양한 문학 및 문화 행사 정보를 제공합니다.
+
+### 관광지 추천
+파주 출판단지 일대의 추천 관광지와 방문 정보를 제공합니다.
+
+### AI 책갈피 생성
+Google Gemini AI를 활용하여 사용자가 선택한 장소와 문구를 바탕으로 개인화된 책갈피 이미지를 생성합니다.
+
+### 북BTI (독서 성향 테스트)
+사용자의 독서 성향을 분석하여 맞춤형 장소와 도서를 추천하는 인터랙티브 테스트입니다.
+
+### 마이 아틀라스
+사용자가 찜한 장소들을 모아볼 수 있는 개인화된 페이지입니다.
 
 ## 기술 스택
 
-- **Next.js 14** - React 프레임워크 (App Router)
-- **Tailwind CSS** - 유틸리티 우선 CSS 프레임워크
-- **Pretendard** - 한글 최적화 폰트
-- **Google Gemini AI** - 책갈피 이미지 생성
+### 프레임워크
+- **Next.js 14**: React 기반 풀스택 웹 프레임워크 (App Router 사용)
+- **React 18**: 사용자 인터페이스 라이브러리
 
-## 주요 기능
+### 스타일링
+- **Tailwind CSS**: 유틸리티 우선 CSS 프레임워크
+- **Pretendard**: 한글 가독성 최적화 웹폰트
+- **반응형 디자인**: 모바일 퍼스트 접근 방식
 
-- 📍 장소 탐색 (북카페, 브런치 카페, 야외 공간 등)
-- 🎭 문화 행사 정보
-- 🗺️ 관광지 추천
-- 🎨 AI 책갈피 생성
-- 📖 북BTI (독서 성향 테스트)
-- ❤️ 찜하기 및 마이 아틀라스
+### 외부 서비스 연동
+- **Backend API (Express)**: 장소, 이벤트, 관광지 데이터
+- **FastAPI**: AI 이미지 생성 및 북BTI 분석
+- **Google Gemini AI**: 책갈피 이미지 생성
 
-## 로컬 개발 환경 설정
+## 페이지 구조
 
-### 1. 의존성 설치
-
-```bash
-npm install
+```
+Story Atlas Frontend
+├── 홈 (/)                    # 메인 랜딩 페이지
+├── 탐색 (/explore)           # 장소 탐색 페이지
+│   ├── 북카페
+│   ├── 브런치 카페
+│   └── 야외 공간
+├── 아틀라스 (/atlas)         # 행사 및 관광지
+│   ├── 행사
+│   └── 관광지
+├── 책갈피 (/bookmark)        # AI 책갈피 생성
+├── 북BTI (/bookbti)          # 독서 성향 테스트
+└── 마이 아틀라스 (/myatlas)  # 찜한 장소 모음
 ```
 
-### 2. 환경 변수 설정
+## 아키텍처
 
-```bash
-cp .env.example .env.local
-```
-
-`.env.local` 파일에 백엔드 API URL을 설정하세요:
-
-```env
-# Backend API URL (Express)
-NEXT_PUBLIC_API_URL=http://localhost:8000
-
-# FastAPI URL
-NEXT_PUBLIC_FASTAPI_URL=http://localhost:8001
-```
-
-### 3. 개발 서버 실행
-
-```bash
-npm run dev
-```
-
-브라우저에서 http://localhost:3001 접속
-
-### 4. 프로덕션 빌드
-
-```bash
-npm run build
-npm start
-```
-
-## 프로젝트 구조
-
+### 컴포넌트 구조
 ```
 frontend/
 ├── src/
-│   ├── app/                    # Next.js App Router 페이지
-│   │   ├── page.js            # 홈 페이지
-│   │   ├── explore/           # 탐색 페이지
-│   │   ├── atlas/             # 행사 페이지
-│   │   ├── bookmark/          # 책갈피 생성
-│   │   ├── myatlas/           # 마이 아틀라스
-│   │   └── bookbti/           # 북BTI
-│   ├── components/            # 재사용 가능한 컴포넌트
-│   │   ├── Card.js           # 카드 컴포넌트
-│   │   ├── Navigation.js     # 네비게이션
+│   ├── app/                  # Next.js App Router 페이지
+│   │   ├── page.js          # 홈 페이지
+│   │   ├── explore/         # 탐색 페이지
+│   │   ├── atlas/           # 행사 페이지
+│   │   ├── bookmark/        # 책갈피 생성
+│   │   ├── myatlas/         # 마이 아틀라스
+│   │   └── bookbti/         # 북BTI
+│   ├── components/          # 재사용 가능한 컴포넌트
+│   │   ├── Card.js         # 카드 컴포넌트
+│   │   ├── Navigation.js   # 네비게이션
 │   │   └── ...
-│   └── styles/               # 스타일 파일
+│   └── styles/             # 전역 스타일
 │       └── globals.css
-├── public/                    # 정적 파일
-│   ├── images/
-│   └── ...
-├── next.config.mjs           # Next.js 설정
-├── tailwind.config.mjs       # Tailwind CSS 설정
-└── package.json
+├── public/                  # 정적 파일 (이미지, 아이콘 등)
+├── next.config.mjs         # Next.js 설정
+└── tailwind.config.mjs     # Tailwind CSS 설정
 ```
 
-## API 연동
+### API 통신
+프론트엔드는 두 개의 백엔드 서버와 통신합니다:
 
-백엔드 API와의 통신은 `fetch`를 사용합니다:
+1. **Express API (포트 8000)**: 일반 데이터 CRUD
+   - 장소 목록 및 상세 정보
+   - 이벤트 및 관광지 데이터
+   - 찜하기 및 조회수 관리
 
-```javascript
-// 장소 목록 가져오기
-const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/places/book-cafe`);
-const places = await response.json();
+2. **FastAPI (포트 8001)**: AI 서비스
+   - 책갈피 이미지 생성
+   - 북BTI 분석
+   - 리뷰 요약
 
-// AI 책갈피 생성
-const response = await fetch(`${process.env.NEXT_PUBLIC_FASTAPI_URL}/api/bookmark/create`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ text: '책갈피 문구', style: 'modern' })
-});
-```
+## 주요 특징
 
-## 배포
+**사용자 경험 최적화**
+- 모바일 우선 반응형 디자인
+- Pretendard 폰트를 활용한 한글 가독성 최적화
+- 직관적인 네비게이션 구조
 
-### Vercel (권장)
+**성능 최적화**
+- Next.js App Router를 활용한 서버 사이드 렌더링
+- 이미지 최적화 및 레이지 로딩
+- Vercel Edge Network를 통한 빠른 글로벌 배포
 
-1. GitHub 리포지토리 연결
-2. Vercel 대시보드에서 환경 변수 설정
-3. 자동 배포
+**AI 통합**
+- Google Gemini를 활용한 실시간 이미지 생성
+- 사용자 맞춤형 콘텐츠 제공
 
-### 수동 배포
+## 배포 정보
 
-```bash
-npm run build
-# build 폴더를 호스팅 서버에 배포
-```
+- **플랫폼**: Vercel
+- **프레임워크**: Next.js 14
+- **배포 방식**: GitHub 연동 자동 배포
+- **CDN**: Vercel Edge Network
 
-## 개발 가이드
+## 개발 문서
 
-### 새로운 페이지 추가
-
-`src/app/` 폴더에 새 폴더와 `page.js` 파일 생성:
-
-```javascript
-// src/app/newpage/page.js
-export default function NewPage() {
-  return <div>새 페이지</div>;
-}
-```
-
-### 컴포넌트 작성
-
-```javascript
-// src/components/MyComponent.js
-export default function MyComponent({ title }) {
-  return <div>{title}</div>;
-}
-```
-
-## 스타일 가이드
-
-- Tailwind CSS 유틸리티 클래스 사용
-- 커스텀 스타일은 `globals.css`에 추가
-- 반응형 디자인 우선 (모바일 퍼스트)
-
-## 트러블슈팅
-
-### 백엔드 연결 오류
-
-- `.env.local` 파일의 API URL 확인
-- 백엔드 서버가 실행 중인지 확인
-- CORS 설정 확인
-
-### 빌드 오류
-
-```bash
-# 캐시 삭제 후 재빌드
-rm -rf .next
-npm run build
-```
-
-## 라이선스
-
-ISC
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+로컬 개발 환경 설정 및 상세 가이드는 별도 문서를 참고하세요.
